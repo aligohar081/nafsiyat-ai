@@ -7,13 +7,18 @@ from typing import List, Optional
 import os
 import uuid
 
+# Import from local modules
 from .database import engine, get_db, Base
 from . import models, schemas, auth, chatbot, teleconsultation, community
 
 # Create tables
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Nafsiyat AI", description="Mental Wellness Platform", version="1.0.0")
+app = FastAPI(
+    title="Nafsiyat AI", 
+    description="Mental Wellness Platform", 
+    version="1.0.0"
+)
 
 # CORS middleware
 app.add_middleware(
@@ -813,6 +818,9 @@ def startup_event():
     print("✅ Nafsiyat AI is ready!")
     print(f"📡 Groq API configured: {bool(os.getenv('GROQ_API_KEY')) and os.getenv('GROQ_API_KEY') != 'your-groq-api-key-here'}")
 
+# ============ Main Entry Point ============
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)

@@ -4,17 +4,21 @@ from sqlalchemy.orm import sessionmaker
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+# Get database URL from environment (Railway provides this)
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./nafsiyat.db")
 
-# Use SQLite - no PostgreSQL needed
-SQLALCHEMY_DATABASE_URL = "sqlite:///./nafsiyat.db"
+# Handle Railway's PostgreSQL connection string
+if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-# Create engine with SQLite specific settings
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL,
-    connect_args={"check_same_thread": False},  # Needed for SQLite
-    echo=False  # Set to True to see SQL queries
-)
+# Create engine
+if DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(
+        DATABASE_URL, 
+        connect_args={"check_same_thread": False}
+    )
+else:
+    engine = create_engine(DATABASE_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

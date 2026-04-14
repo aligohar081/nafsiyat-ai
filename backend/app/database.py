@@ -4,6 +4,9 @@ from sqlalchemy.orm import sessionmaker
 import os
 from dotenv import load_dotenv
 
+# Load environment variables
+load_dotenv()
+
 # Get database URL from environment (Railway provides this)
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./nafsiyat.db")
 
@@ -25,7 +28,6 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 def get_db():
-    """Dependency for getting database session"""
     db = SessionLocal()
     try:
         yield db

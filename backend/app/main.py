@@ -70,7 +70,7 @@ def create_sample_psychologists(db: Session):
         
         for doc in psychologists_data:
             # Check if user already exists
-            existing_user = db.query(models.User).filter(models.User.username == doc["username"]).first()
+            existing_user = db.query(models.User).filter((models.User.username == doc["username"]) | (models.User.email == doc["email"])).first()
             if existing_user:
                 print(f"⚠️ User {doc['username']} already exists, skipping")
                 continue

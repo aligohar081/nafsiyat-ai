@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chatbot - Nafsiyat AI</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Chat Interface Enhanced Styles */
+        .chat-wrapper {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 2rem);
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .chat-header {
+            background: linear-gradient(135deg, #1B2B4E 0%, #2A3D62 100%);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .chat-header-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .chat-header-info i {
+            font-size: 2rem;
+            color: #FFD700;
+        }
+        
+        .chat-header-info h2 {
+            color: white;
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .chat-header-info p {
+            color: rgba(255,255,255,0.8);
+            font-size: 0.8rem;
+        }
+        
+        .chat-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .history-btn {
+            background: rgba(255,255,255,0.15);
+            color: #FFD700;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+        }
+        
+        .history-btn:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-2px);
+        }
+        
+        .new-chat-btn {
+            background: rgba(255,255,255,0.15);
+            color: #FFD700;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+        }
+        
+        .new-chat-btn:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-2px);
+        }
+        
+        /* Chat History Sidebar */
+        .chat-history-sidebar {
+            position: fixed;
+            left: -320px;
+            top: 0;
+            width: 320px;
+            height: 100vh;
+            background: white;
+            box-shadow: var(--shadow-lg);
+            z-index: 1002;
+            transition: left 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chat-history-sidebar.open {
+            left: 280px;
+        }
+        
+        .history-header {
+            background: linear-gradient(135deg, #1B2B4E 0%, #2A3D62 100%);
+            padding: 1rem;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .history-header h3 {
+            font-size: 1rem;
+            margin: 0;
+        }
+        
+        .close-history {
+            background: none;
+            border: none;
+            color: #FFD700;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        
+        .history-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        
+        .history-item {
+            background: #f5f5f7;
+            padding: 0.75rem;
+            border-radius: 10px;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid #e8e8ec;
+        }
+        
+        .history-item:hover {
+            background: #e8eaf6;
+            transform: translateX(5px);
+            border-color: #FFD700;
+        }
+        
+        .history-item.active {
+            background: linear-gradient(135deg, #1B2B4E 0%, #2A3D62 100%);
+            color: white;
+            border-color: #FFD700;
+        }
+        
+        .history-item.active .history-preview {
+            color: rgba(255,255,255,0.8);
+        }
+        
+        .history-title {
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .history-preview {
+            font-size: 0.7rem;
+            color: #6c6c7a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .history-date {
+            font-size: 0.65rem;
+            color: #DAA520;
+            margin-top: 0.25rem;
+        }
+        
+        .delete-history-btn {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .delete-history-btn:hover {
+            background: #ffebee;
+        }
+        
+        .history-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            background: #f5f5f7;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        /* Custom Scrollbar for Chat */
+        .chat-messages::-webkit-scrollbar,
+        .history-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-track,
+        .history-list::-webkit-scrollbar-track {
+            background: #e8e8ec;
+            border-radius: 10px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb,
+        .history-list::-webkit-scrollbar-thumb {
+            background: #DAA520;
+            border-radius: 10px;
+        }
+        
+        .message {
+            display: flex;
+            gap: 0.75rem;
+            max-width: 75%;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+        
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            background: linear-gradient(135deg, #1B2B4E 0%, #2A3D62 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #FFD700;
+            flex-shrink: 0;
+        }
+        
+        .message.user .message-avatar {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #1B2B4E;
+        }
+        
+        .message-content {
+            background: white;
+            padding: 0.75rem 1rem;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            border: 1px solid #e8e8ec;
+            position: relative;
+        }
+        
+        .message.user .message-content {
+            background: linear-gradient(135deg, #1B2B4E 0%, #2A3D62 100%);
+            color: white;
+            border: none;
+        }
+        
+        .message-content p {
+            margin: 0;
+            line-height: 1.5;
+            font-size: 0.9rem;
+        }
+        
+        .message-content strong {
+            color: #FFD700;
+        }
+        
+        .message.user .message-content strong {
+            color: #FFD700;
+        }
+        
+        .message-time {
+            font-size: 0.65rem;
+            color: #6c6c7a;
+            margin-top: 0.25rem;
+            display: block;
+            text-align: right;
+        }
+        
+        .message.user .message-time {
+            color: rgba(255,255,255,0.6);
+        }
+        
+        /* Typing Indicator */
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+            padding: 8px 0;
+        }
+        
+        .typing-dots span {
+            width: 8px;
+            height: 8px;
+            background: #DAA520;
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dots span:nth-child(1) { animation-delay: 0s; }
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typingBounce {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        .chat-input-area {
+            background: white;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e8e8ec;
+        }
+        
+        .quick-suggestions {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .suggestion-btn {
+            padding: 0.4rem 1rem;
+            background: #f5f5f7;
+            border: 1px solid #e8e8ec;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.3s;
+            color: #1B2B4E;
+            font-weight: 500;
+        }
+        
+        .suggestion-btn:hover {
+            background: linear-gradient(135deg, #1B2B4E 0%, #2A3D62 100%);
+            color: #FFD700;
+            border-color: #FFD700;
+            transform: translateY(-2px);
+        }
+        
+        .input-wrapper {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-end;
+            background: #f5f5f7;
+            border-radius: 25px;
+            padding: 0.4rem 0.4rem 0.4rem 1rem;
+            border: 1px solid #e8e8ec;
+            transition: all 0.3s;
+        }
+        
+        .input-wrapper:focus-within {
+            border-color: #FFD700;
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+        }
+        
+        .input-wrapper textarea {
+            flex: 1;
+            padding: 0.6rem 0;
+            border: none;
+            background: transparent;
+            resize: none;
+            font-family: inherit;
+            font-size: 0.9rem;
+            max-height: 100px;
+        }
+        
+        .input-wrapper textarea:focus {
+            outline: none;
+        }
+        
+        .send-btn {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #1B2B4E;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        }
+        
+        .chat-disclaimer {
+            text-align: center;
+            margin-top: 0.75rem;
+            font-size: 0.65rem;
+            color: #6c6c7a;
+        }
+        
+        .chat-disclaimer i {
+            color: #DAA520;
+            margin-right: 0.25rem;
+        }
+        
+        /* Overlay */
+        .history-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1001;
+            display: none;
+        }
+        
+        .history-overlay.show {
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            .message {
+                max-width: 85%;
+            }
+            
+            .quick-suggestions {
+                justify-content: center;
+            }
+            
+            .suggestion-btn {
+                font-size: 0.7rem;
+                padding: 0.3rem 0.7rem;
+            }
+            
+            .chat-history-sidebar.open {
+                left: 0;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <i class="fas fa-brain"></i>
+                <span>Nafsiyat AI</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="chatbot.html" class="nav-item active">
+                    <i class="fas fa-robot"></i>
+                    <span>AI Chatbot</span>
+                </a>
+                <a href="therapy.html" class="nav-item">
+                    <i class="fas fa-video"></i>
+                    <span>Teleconsultation</span>
+                </a>
+                <a href="community.html" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    <span>Community</span>
+                </a>
+                <a href="library.html" class="nav-item">
+                    <i class="fas fa-book-open"></i>
+                    <span>Wellness Library</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="userNameDisplay">User</span>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Chat Interface -->
+        <main class="main-content" style="padding: 1rem;">
+            <div class="chat-wrapper">
+                <div class="chat-header">
+                    <div class="chat-header-info">
+                        <i class="fas fa-robot"></i>
+                        <div>
+                            <h2>Nafsiyat AI Assistant</h2>
+                            <p>Powered by Groq AI • Always here for you</p>
+                        </div>
+                    </div>
+                    <div class="chat-actions">
+                        <button class="history-btn" onclick="toggleHistorySidebar()">
+                            <i class="fas fa-history"></i> History
+                        </button>
+                        <button class="new-chat-btn" onclick="startNewChat()">
+                            <i class="fas fa-plus"></i> New
+                        </button>
+                    </div>
+                </div>
+
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message assistant">
+                        <div class="message-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="message-content">
+                            <p>✨ <strong>Assalam-o-Alaikum!</strong> ✨<br><br>I'm Nafsiyat AI, your mental wellness companion. How are you feeling today? Remember, I'm here to listen and support you. 💙</p>
+                            <span class="message-time">Just now</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-area">
+                    <div class="quick-suggestions">
+                        <button class="suggestion-btn" onclick="sendQuickMessage('I\'m feeling anxious today')">
+                            <span>😰</span> Feeling anxious
+                        </button>
+                        <button class="suggestion-btn" onclick="sendQuickMessage('I\'m feeling sad')">
+                            <span>😔</span> Feeling sad
+                        </button>
+                        <button class="suggestion-btn" onclick="sendQuickMessage('I need stress relief')">
+                            <span>😫</span> Need stress relief
+                        </button>
+                        <button class="suggestion-btn" onclick="sendQuickMessage('I want to practice mindfulness')">
+                            <span>🧘</span> Mindfulness
+                        </button>
+                        <button class="suggestion-btn" onclick="sendQuickMessage('What foods help with depression?')">
+                            <span>🍎</span> Diet & Mental Health
+                        </button>
+                        <button class="suggestion-btn" onclick="sendQuickMessage('How can I sleep better?')">
+                            <span>😴</span> Sleep tips
+                        </button>
+                    </div>
+                    <div class="input-wrapper">
+                        <textarea id="messageInput" placeholder="Type your message here..." rows="1" onkeypress="handleKeyPress(event)"></textarea>
+                        <button class="send-btn" onclick="sendMessage()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                    <div class="chat-disclaimer">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Not a crisis service. If you're in crisis, please contact emergency services.</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Chat History Sidebar -->
+    <div id="historyOverlay" class="history-overlay" onclick="closeHistorySidebar()"></div>
+    <div id="historySidebar" class="chat-history-sidebar">
+        <div class="history-header">
+            <h3><i class="fas fa-history"></i> Chat History</h3>
+            <button class="close-history" onclick="closeHistorySidebar()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div id="historyList" class="history-list">
+            <div style="text-align: center; padding: 2rem; color: #6c6c7a;">
+                <i class="fas fa-comments" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
+                Loading history...
+            </div>
+        </div>
+    </div>
+
+    <script src="js/chatbot.js"></script>
+</body>
+</html>

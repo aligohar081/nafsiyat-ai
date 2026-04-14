@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community - Nafsiyat AI</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Community Page Enhanced Styles */
+        .community-header {
+            background: linear-gradient(135deg, #1B2B4E 0%, #2A3D62 100%);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .community-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        
+        .community-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+        
+        .community-header h1 i {
+            color: #FFD700;
+            margin-right: 0.5rem;
+        }
+        
+        .community-header p {
+            opacity: 0.9;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        
+        .create-post-btn {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #1B2B4E;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+        }
+        
+        .create-post-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        }
+        
+        .community-filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .filter-group {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            background: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 40px;
+            box-shadow: var(--shadow);
+        }
+        
+        .filter-group i {
+            color: #DAA520;
+            margin-left: 0.5rem;
+        }
+        
+        .filter-select {
+            padding: 0.6rem 2rem 0.6rem 1rem;
+            border: none;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            background: transparent;
+            cursor: pointer;
+            font-weight: 500;
+            color: #1B2B4E;
+        }
+        
+        .filter-select:focus {
+            outline: none;
+        }
+        
+        .stats-badge {
+            background: white;
+            padding: 0.5rem 1rem;
+            border-radius: 30px;
+            display: flex;
+            gap: 1rem;
+            box-shadow: var(--shadow);
+        }
+        
+        .stats-badge span {
+            color: #1B2B4E;
+            font-size: 0.85rem;
+        }
+        
+        .stats-badge i {
+            color: #DAA520;
+            margin-right: 0.25rem;
+        }
+        
+        .posts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .post-card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s;
+            border: 1px solid #e8e8ec;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .post-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .post-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .post-card:hover::before {
+            opacity: 1;
+        }
+        
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .post-author {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .author-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #1B2B4E 0%, #2A3D62 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #FFD700;
+        }
+        
+        .author-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .author-name {
+            font-weight: 600;
+            color: #1B2B4E;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .anonymous-badge {
+            background: #e8e8ec;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #6c6c7a;
+        }
+        
+        .post-time {
+            font-size: 0.7rem;
+            color: #6c6c7a;
+        }
+        
+        .post-category {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #1B2B4E;
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .post-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1B2B4E;
+            margin-bottom: 0.75rem;
+            line-height: 1.4;
+        }
+        
+        .post-excerpt {
+            color: #6c6c7a;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        
+        .post-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e8e8ec;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .post-stats {
+            display: flex;
+            gap: 1.5rem;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #6c6c7a;
+            font-size: 0.85rem;
+            transition: color 0.3s;
+        }
+        
+        .stat-item i {
+            color: #DAA520;
+            font-size: 1rem;
+        }
+        
+        .stat-item:hover {
+            color: #1B2B4E;
+        }
+        
+        .post-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .action-btn {
+            padding: 0.5rem 1.2rem;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .like-btn {
+            background: transparent;
+            border: 1px solid #e8e8ec;
+            color: #6c6c7a;
+        }
+        
+        .like-btn:hover {
+            background: #ffebee;
+            border-color: #e74c3c;
+            color: #e74c3c;
+        }
+        
+        .like-btn.liked {
+            background: #e74c3c;
+            border-color: #e74c3c;
+            color: white;
+        }
+        
+        .comment-btn {
+            background: transparent;
+            border: 1px solid #e8e8ec;
+            color: #6c6c7a;
+        }
+        
+        .comment-btn:hover {
+            background: #e3f2fd;
+            border-color: #2196F3;
+            color: #2196F3;
+        }
+        
+        /* Modal Enhancements */
+        .modal-content {
+            border-top: 4px solid #FFD700;
+        }
+        
+        .modal-content h2 {
+            color: #1B2B4E;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            color: #1B2B4E;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        
+        .form-group input, 
+        .form-group select, 
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e8e8ec;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus, 
+        .form-group select:focus, 
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #FFD700;
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+        }
+        
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+        
+        .checkbox-label input {
+            width: auto;
+        }
+        
+        /* Post Detail Styles */
+        .post-detail-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e8e8ec;
+        }
+        
+        .post-detail-title {
+            font-size: 1.8rem;
+            color: #1B2B4E;
+            margin: 1rem 0;
+        }
+        
+        .post-detail-content {
+            line-height: 1.8;
+            color: #2d2d3d;
+            margin: 1.5rem 0;
+        }
+        
+        .comments-section {
+            margin-top: 2rem;
+        }
+        
+        .comments-title {
+            font-size: 1.2rem;
+            color: #1B2B4E;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .comment-card {
+            background: #f5f5f7;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            transition: transform 0.3s;
+        }
+        
+        .comment-card:hover {
+            transform: translateX(5px);
+        }
+        
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .comment-author {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .comment-author i {
+            color: #DAA520;
+        }
+        
+        .comment-author strong {
+            color: #1B2B4E;
+        }
+        
+        .comment-time {
+            font-size: 0.7rem;
+            color: #6c6c7a;
+        }
+        
+        .comment-text {
+            color: #2d2d3d;
+            line-height: 1.5;
+            margin-top: 0.5rem;
+        }
+        
+        .add-comment-section {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e8e8ec;
+        }
+        
+        .add-comment-section textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid #e8e8ec;
+            border-radius: 12px;
+            font-family: inherit;
+            resize: vertical;
+            margin-bottom: 1rem;
+        }
+        
+        .add-comment-section textarea:focus {
+            outline: none;
+            border-color: #FFD700;
+        }
+        
+        .loading, .no-data, .error {
+            text-align: center;
+            padding: 3rem;
+            color: #6c6c7a;
+        }
+        
+        .loading-spinner {
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .spinner {
+            border: 3px solid #e8e8ec;
+            border-top: 3px solid #FFD700;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .community-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .post-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .post-footer {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .post-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+            
+            .community-filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-group {
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <i class="fas fa-brain"></i>
+                <span>Nafsiyat AI</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="chatbot.html" class="nav-item">
+                    <i class="fas fa-robot"></i>
+                    <span>AI Chatbot</span>
+                </a>
+                <a href="therapy.html" class="nav-item">
+                    <i class="fas fa-video"></i>
+                    <span>Teleconsultation</span>
+                </a>
+                <a href="community.html" class="nav-item active">
+                    <i class="fas fa-users"></i>
+                    <span>Community</span>
+                </a>
+                <a href="library.html" class="nav-item">
+                    <i class="fas fa-book-open"></i>
+                    <span>Wellness Library</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="userNameDisplay">User</span>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Community Header -->
+            <div class="community-header">
+                <h1><i class="fas fa-users"></i> Peer Support Community</h1>
+                <p>Share, learn, and grow together in a safe, anonymous space</p>
+                <button class="create-post-btn" onclick="showCreatePostModal()">
+                    <i class="fas fa-pen-alt"></i> Create New Post
+                </button>
+            </div>
+
+            <!-- Filters and Stats -->
+            <div class="community-filters">
+                <div class="filter-group">
+                    <i class="fas fa-filter"></i>
+                    <select id="categoryFilter" class="filter-select" onchange="loadPosts()">
+                        <option value="">All Categories</option>
+                        <option value="Anxiety">😰 Anxiety</option>
+                        <option value="Depression">😔 Depression</option>
+                        <option value="Stress">😫 Stress</option>
+                        <option value="Mindfulness">🧘 Mindfulness</option>
+                        <option value="Relationships">💕 Relationships</option>
+                    </select>
+                </div>
+                <div class="stats-badge">
+                    <span><i class="fas fa-users"></i> 1.2k+ Members</span>
+                    <span><i class="fas fa-comments"></i> 500+ Posts</span>
+                </div>
+            </div>
+
+            <!-- Posts List -->
+            <div id="postsList" class="posts-list">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading community posts...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Create Post Modal -->
+    <div id="createPostModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="close" onclick="closeCreatePostModal()">&times;</span>
+            <h2><i class="fas fa-pen-alt" style="color: #DAA520;"></i> Create New Post</h2>
+            <form id="createPostForm">
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="postTitle" required placeholder="What's on your mind?">
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="postCategory" required>
+                        <option value="General">General Discussion</option>
+                        <option value="Anxiety">Anxiety & Worry</option>
+                        <option value="Depression">Depression & Mood</option>
+                        <option value="Stress">Stress Management</option>
+                        <option value="Mindfulness">Mindfulness & Meditation</option>
+                        <option value="Relationships">Relationships & Connection</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Content</label>
+                    <textarea id="postContent" rows="6" required placeholder="Share your experience or ask for advice..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="postAnonymous" checked>
+                        <span>Post anonymously (your identity will be hidden)</span>
+                    </label>
+                </div>
+                <button type="submit" class="btn-primary btn-block">Publish Post</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- View Post Modal -->
+    <div id="viewPostModal" class="modal">
+        <div class="modal-content" style="max-width: 700px; max-height: 85vh; overflow-y: auto;">
+            <span class="close" onclick="closeViewPostModal()">&times;</span>
+            <div id="postDetail"></div>
+            <div id="commentsList"></div>
+            <div class="add-comment-section">
+                <form id="addCommentForm" onsubmit="addComment(event)">
+                    <textarea id="commentContent" rows="3" placeholder="Write a supportive comment..."></textarea>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="commentAnonymous" checked>
+                            <span>Comment anonymously</span>
+                        </label>
+                    </div>
+                    <button type="submit" class="btn-primary">Post Comment</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000/api';
+        let currentPostId = null;
+
+        function getAuthToken() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'index.html';
+            }
+            return token;
+        }
+
+        async function loadPosts() {
+            const container = document.getElementById('postsList');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading posts...</p></div>';
+            
+            const category = document.getElementById('categoryFilter').value;
+            let url = `${API_URL}/community/posts`;
+            if (category) {
+                url += `?category=${encodeURIComponent(category)}`;
+            }
+            
+            try {
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+                });
+                
+                if (response.ok) {
+                    const posts = await response.json();
+                    if (posts.length === 0) {
+                        container.innerHTML = '<div class="no-data"><i class="fas fa-comments" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>No posts yet.<br>Be the first to share your story!</div>';
+                    } else {
+                        container.innerHTML = posts.map(post => `
+                            <div class="post-card">
+                                <div class="post-header">
+                                    <div class="post-author">
+                                        <div class="author-avatar">
+                                            <i class="fas ${post.is_anonymous ? 'fa-user-secret' : 'fa-user-circle'}"></i>
+                                        </div>
+                                        <div class="author-info">
+                                            <div class="author-name">
+                                                ${escapeHtml(post.author)}
+                                                ${post.is_anonymous ? '<span class="anonymous-badge">Anonymous</span>' : ''}
+                                            </div>
+                                            <div class="post-time">${formatDate(post.created_at)}</div>
+                                        </div>
+                                    </div>
+                                    <div class="post-category">${post.category}</div>
+                                </div>
+                                <div class="post-title">${escapeHtml(post.title)}</div>
+                                <div class="post-excerpt">${escapeHtml(post.content.substring(0, 200))}${post.content.length > 200 ? '...' : ''}</div>
+                                <div class="post-footer">
+                                    <div class="post-stats">
+                                        <div class="stat-item">
+                                            <i class="fas fa-heart"></i>
+                                            <span>${post.likes}</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <i class="fas fa-comment"></i>
+                                            <span>${post.comment_count}</span>
+                                        </div>
+                                    </div>
+                                    <div class="post-actions">
+                                        <button class="action-btn like-btn" onclick="likePost(${post.id})">
+                                            <i class="fas fa-heart"></i> Like
+                                        </button>
+                                        <button class="action-btn comment-btn" onclick="viewPost(${post.id})">
+                                            <i class="fas fa-comment"></i> Comment
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading posts:', error);
+                container.innerHTML = '<div class="error"><i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>Error loading posts. Please try again.</div>';
+            }
+        }
+
+        function showCreatePostModal() {
+            document.getElementById('createPostModal').style.display = 'flex';
+        }
+
+        function closeCreatePostModal() {
+            document.getElementById('createPostModal').style.display = 'none';
+            document.getElementById('createPostForm').reset();
+            document.getElementById('postAnonymous').checked = true;
+        }
+
+        document.getElementById('createPostForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const postData = {
+                title: document.getElementById('postTitle').value,
+                content: document.getElementById('postContent').value,
+                category: document.getElementById('postCategory').value,
+                is_anonymous: document.getElementById('postAnonymous').checked
+            };
+            
+            try {
+                const response = await fetch(`${API_URL}/community/posts`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getAuthToken()}`
+                    },
+                    body: JSON.stringify(postData)
+                });
+                
+                if (response.ok) {
+                    alert('✨ Post created successfully!');
+                    closeCreatePostModal();
+                    loadPosts();
+                } else {
+                    alert('Failed to create post. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error creating post:', error);
+                alert('Network error. Please check your connection.');
+            }
+        });
+
+        async function viewPost(postId) {
+            currentPostId = postId;
+            
+            try {
+                const response = await fetch(`${API_URL}/community/posts/${postId}`, {
+                    headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+                });
+                
+                if (response.ok) {
+                    const post = await response.json();
+                    
+                    document.getElementById('postDetail').innerHTML = `
+                        <div class="post-detail-header">
+                            <div class="post-header">
+                                <div class="post-author">
+                                    <div class="author-avatar">
+                                        <i class="fas ${post.is_anonymous ? 'fa-user-secret' : 'fa-user-circle'}"></i>
+                                    </div>
+                                    <div class="author-info">
+                                        <div class="author-name">
+                                            ${escapeHtml(post.author)}
+                                            ${post.is_anonymous ? '<span class="anonymous-badge">Anonymous</span>' : ''}
+                                        </div>
+                                        <div class="post-time">${formatDate(post.created_at)}</div>
+                                    </div>
+                                </div>
+                                <div class="post-category">${post.category}</div>
+                            </div>
+                            <h1 class="post-detail-title">${escapeHtml(post.title)}</h1>
+                            <div class="post-stats">
+                                <div class="stat-item">
+                                    <i class="fas fa-heart"></i>
+                                    <span>${post.likes}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="post-detail-content">${escapeHtml(post.content)}</div>
+                    `;
+                    
+                    // Load comments
+                    const commentsHtml = post.comments.map(comment => `
+                        <div class="comment-card">
+                            <div class="comment-header">
+                                <div class="comment-author">
+                                    <i class="fas ${comment.is_anonymous ? 'fa-user-secret' : 'fa-user-circle'}"></i>
+                                    <strong>${escapeHtml(comment.author)}</strong>
+                                </div>
+                                <div class="comment-time">${formatDate(comment.created_at)}</div>
+                            </div>
+                            <div class="comment-text">${escapeHtml(comment.content)}</div>
+                        </div>
+                    `).join('');
+                    
+                    document.getElementById('commentsList').innerHTML = `
+                        <div class="comments-section">
+                            <div class="comments-title">
+                                <i class="fas fa-comments"></i>
+                                Comments (${post.comments.length})
+                            </div>
+                            ${commentsHtml || '<div class="no-data">No comments yet. Be the first to respond!</div>'}
+                        </div>
+                    `;
+                    
+                    document.getElementById('viewPostModal').style.display = 'flex';
+                }
+            } catch (error) {
+                console.error('Error loading post:', error);
+                alert('Error loading post details');
+            }
+        }
+
+        async function addComment(event) {
+            event.preventDefault();
+            
+            const commentData = {
+                content: document.getElementById('commentContent').value,
+                is_anonymous: document.getElementById('commentAnonymous').checked
+            };
+            
+            if (!commentData.content.trim()) {
+                alert('Please write a comment before posting.');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/community/posts/${currentPostId}/comments`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getAuthToken()}`
+                    },
+                    body: JSON.stringify(commentData)
+                });
+                
+                if (response.ok) {
+                    document.getElementById('addCommentForm').reset();
+                    document.getElementById('commentAnonymous').checked = true;
+                    viewPost(currentPostId); // Refresh the post view
+                } else {
+                    alert('Failed to add comment');
+                }
+            } catch (error) {
+                console.error('Error adding comment:', error);
+                alert('Network error');
+            }
+        }
+
+        async function likePost(postId) {
+            try {
+                const response = await fetch(`${API_URL}/community/posts/${postId}/like`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+                });
+                
+                if (response.ok) {
+                    loadPosts(); // Refresh the posts list
+                }
+            } catch (error) {
+                console.error('Error liking post:', error);
+            }
+        }
+
+        function closeViewPostModal() {
+            document.getElementById('viewPostModal').style.display = 'none';
+            currentPostId = null;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMins / 60);
+            const diffDays = Math.floor(diffHours / 24);
+            
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+            if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+            if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+            return date.toLocaleDateString();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('username');
+            window.location.href = 'index.html';
+        }
+
+        // Load user name
+        async function loadUserName() {
+            try {
+                const response = await fetch(`${API_URL}/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+                });
+                if (response.ok) {
+                    const user = await response.json();
+                    const displayName = user.full_name || user.username;
+                    document.getElementById('userNameDisplay').textContent = displayName;
+                }
+            } catch (error) {
+                console.error('Error loading user:', error);
+            }
+        }
+
+        // Load initial posts
+        loadUserName();
+        loadPosts();
+    </script>
+</body>
+</html>

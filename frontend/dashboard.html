@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Nafsiyat AI</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Dashboard Enhanced Styles - Navy Blue & Golden Yellow Theme */
+        :root {
+            --primary: #1B2B4E;
+            --primary-dark: #0F1A33;
+            --primary-light: #2A3D62;
+            --accent: #FFD700;
+            --accent-dark: #DAA520;
+            --accent-light: #FFE44D;
+            --success: #2ECC71;
+            --danger: #E74C3C;
+            --dark: #1a1a2e;
+            --gray: #6c6c7a;
+            --light: #f5f5f7;
+            --white: #FFFFFF;
+            --shadow: 0 2px 10px rgba(0,0,0,0.08);
+            --shadow-lg: 0 4px 20px rgba(0,0,0,0.12);
+            --border-radius: 16px;
+        }
+
+        /* Dashboard Header */
+        .dashboard-header {
+            background: linear-gradient(135deg, #1B2B4E 0%, #2A3D62 100%);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .dashboard-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        
+        .dashboard-header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+        
+        .dashboard-header h1 span {
+            color: #FFD700;
+        }
+        
+        .dashboard-header p {
+            opacity: 0.9;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        
+        .mood-tracker {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            background: rgba(255,255,255,0.1);
+            padding: 0.8rem 1.2rem;
+            border-radius: 50px;
+            display: inline-flex;
+        }
+        
+        .mood-label {
+            font-weight: 500;
+            color: rgba(255,255,255,0.9);
+        }
+        
+        .mood-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .mood-btn {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .mood-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+        
+        .mood-btn.selected {
+            background: #FFD700;
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 1px solid #e8e8ec;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+        
+        .stat-icon {
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(135deg, #1B2B4E 0%, #2A3D62 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: #FFD700;
+            flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        
+        .stat-info {
+            flex: 1;
+        }
+        
+        .stat-info h3 {
+            font-size: 0.85rem;
+            color: #6c6c7a;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1B2B4E;
+        }
+        
+        .stat-unit {
+            font-size: 0.9rem;
+            color: #6c6c7a;
+            margin-left: 0.25rem;
+        }
+        
+        /* Quote Section */
+        .quote-section {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border-left: 4px solid #FFD700;
+        }
+        
+        .quote-text {
+            font-size: 1.1rem;
+            font-style: italic;
+            color: #1B2B4E;
+            margin-bottom: 0.5rem;
+        }
+        
+        .quote-author {
+            color: #DAA520;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        /* Quick Actions */
+        .quick-actions {
+            margin-bottom: 2rem;
+        }
+        
+        .quick-actions h2 {
+            margin-bottom: 1rem;
+            color: #1B2B4E;
+            font-size: 1.3rem;
+        }
+        
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .action-card {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: var(--shadow);
+            border: 1px solid #e8e8ec;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .action-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1B2B4E 0%, #2A3D62 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 0;
+        }
+        
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .action-card:hover::before {
+            opacity: 1;
+        }
+        
+        .action-card i,
+        .action-card h3,
+        .action-card p {
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s;
+        }
+        
+        .action-card:hover i,
+        .action-card:hover h3,
+        .action-card:hover p {
+            color: white;
+        }
+        
+        .action-card i {
+            font-size: 2.5rem;
+            color: #DAA520;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+        
+        .action-card h3 {
+            margin-bottom: 0.5rem;
+            color: #1B2B4E;
+        }
+        
+        .action-card p {
+            color: #6c6c7a;
+            font-size: 0.85rem;
+        }
+        
+        /* Modal Styles */
+        .modal-content {
+            border-top: 4px solid #FFD700;
+        }
+        
+        .modal-content h2 {
+            color: #1B2B4E;
+        }
+        
+        .form-group label {
+            color: #1B2B4E;
+            font-weight: 600;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: #FFD700;
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #1B2B4E;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #FFD700;
+            color: #1B2B4E;
+            padding: 0.5rem 1.2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-outline:hover {
+            background: #FFD700;
+            color: #1B2B4E;
+            transform: translateY(-2px);
+        }
+        
+        .btn-block {
+            width: 100%;
+        }
+        
+        /* Breathing Circle Animation */
+        #breathingCircle {
+            transition: transform 4s ease, background-color 0.5s ease;
+        }
+        
+        /* Loading Spinner */
+        .loading-spinner {
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .spinner {
+            border: 3px solid #e8e8ec;
+            border-top: 3px solid #FFD700;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .actions-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .dashboard-header h1 {
+                font-size: 1.4rem;
+            }
+            
+            .mood-tracker {
+                flex-wrap: wrap;
+            }
+            
+            .stat-icon {
+                width: 55px;
+                height: 55px;
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <i class="fas fa-brain"></i>
+                <span>Nafsiyat AI</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item active">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="chatbot.html" class="nav-item">
+                    <i class="fas fa-robot"></i>
+                    <span>AI Chatbot</span>
+                </a>
+                <a href="therapy.html" class="nav-item">
+                    <i class="fas fa-video"></i>
+                    <span>Teleconsultation</span>
+                </a>
+                <a href="community.html" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    <span>Community</span>
+                </a>
+                <a href="library.html" class="nav-item">
+                    <i class="fas fa-book-open"></i>
+                    <span>Wellness Library</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="userNameDisplay">User</span>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Header -->
+            <div class="dashboard-header">
+                <div>
+                    <h1>Welcome back, <span id="userName">Friend</span>! 👋</h1>
+                    <p>Your mental wellness journey continues. How are you feeling today?</p>
+                </div>
+                <div class="mood-tracker">
+                    <span class="mood-label"><i class="fas fa-smile"></i> Track your mood:</span>
+                    <div class="mood-buttons">
+                        <button class="mood-btn" data-mood="great" data-value="5">😊</button>
+                        <button class="mood-btn" data-mood="good" data-value="4">🙂</button>
+                        <button class="mood-btn" data-mood="okay" data-value="3">😐</button>
+                        <button class="mood-btn" data-mood="sad" data-value="2">😔</button>
+                        <button class="mood-btn" data-mood="anxious" data-value="1">😰</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Daily Inspiration Quote -->
+            <div class="quote-section">
+                <div class="quote-text" id="dailyQuote">
+                    "The only journey is the journey within."
+                </div>
+                <div class="quote-author" id="quoteAuthor">
+                    - Rainer Maria Rilke
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card" onclick="location.href='chatbot.html'">
+                    <div class="stat-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Chat Sessions</h3>
+                        <div class="stat-value" id="chatCount">0</div>
+                    </div>
+                </div>
+                <div class="stat-card" onclick="location.href='therapy.html'">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Upcoming Appointments</h3>
+                        <div class="stat-value" id="appointmentCount">0</div>
+                    </div>
+                </div>
+                <div class="stat-card" onclick="location.href='therapy.html'">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Completed Sessions</h3>
+                        <div class="stat-value" id="completedCount">0</div>
+                    </div>
+                </div>
+                <div class="stat-card" onclick="location.href='community.html'">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Community Posts</h3>
+                        <div class="stat-value" id="postCount">0</div>
+                    </div>
+                </div>
+                <div class="stat-card" onclick="location.href='chatbot.html'">
+                    <div class="stat-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Wellness Score</h3>
+                        <div class="stat-value" id="wellnessScore">85<span class="stat-unit">%</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <h2><i class="fas fa-bolt" style="color: #DAA520;"></i> Quick Actions</h2>
+                <div class="actions-grid">
+                    <div class="action-card" onclick="location.href='chatbot.html'">
+                        <i class="fas fa-comment-dots"></i>
+                        <h3>Chat with AI</h3>
+                        <p>Get immediate emotional support</p>
+                    </div>
+                    <div class="action-card" onclick="location.href='therapy.html'">
+                        <i class="fas fa-user-md"></i>
+                        <h3>Book Therapy</h3>
+                        <p>Talk to a professional</p>
+                    </div>
+                    <div class="action-card" onclick="location.href='community.html'">
+                        <i class="fas fa-hand-holding-heart"></i>
+                        <h3>Join Community</h3>
+                        <p>Share anonymously</p>
+                    </div>
+                    <div class="action-card" onclick="location.href='library.html'">
+                        <i class="fas fa-leaf"></i>
+                        <h3>Daily Wellness</h3>
+                        <p>Read wellness articles</p>
+                    </div>
+                    <div class="action-card" onclick="startBreathingExercise()">
+                        <i class="fas fa-lungs"></i>
+                        <h3>Breathing Exercise</h3>
+                        <p>2-minute guided breathing</p>
+                    </div>
+                    <div class="action-card" onclick="showJournalModal()">
+                        <i class="fas fa-pen-alt"></i>
+                        <h3>Gratitude Journal</h3>
+                        <p>Write what you're grateful for</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Journal Modal -->
+    <div id="journalModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <span class="close" onclick="closeJournalModal()">&times;</span>
+            <h2><i class="fas fa-book" style="color: #DAA520;"></i> Gratitude Journal</h2>
+            <p style="color: var(--gray); margin-bottom: 1rem;">What are you grateful for today?</p>
+            <form id="journalForm">
+                <div class="form-group">
+                    <textarea id="journalEntry" rows="5" placeholder="I'm grateful for..." style="width: 100%; padding: 0.75rem; border: 1px solid #e8e8ec; border-radius: 12px; font-family: inherit;"></textarea>
+                </div>
+                <button type="submit" class="btn-primary btn-block">Save Entry</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Breathing Exercise Modal -->
+    <div id="breathingModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <span class="close" onclick="closeBreathingModal()">&times;</span>
+            <h2><i class="fas fa-lungs" style="color: #DAA520;"></i> Deep Breathing Exercise</h2>
+            <div id="breathingCircle" style="width: 150px; height: 150px; margin: 2rem auto; background: linear-gradient(135deg, #1B2B4E 0%, #2A3D62 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #FFD700; font-size: 1.2rem; transition: all 0.3s ease;">
+                Breathe
+            </div>
+            <p id="breathingText" style="font-size: 1.2rem; margin-bottom: 1rem; color: #1B2B4E;">Inhale...</p>
+            <button class="btn-primary" onclick="startBreathing()">Start Exercise</button>
+            <button class="btn-outline" onclick="closeBreathingModal()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000/api';
+        let breathingInterval = null;
+        let breathingStep = 0;
+        
+        // Quotes collection
+        const quotes = [
+            { text: "The only journey is the journey within.", author: "Rainer Maria Rilke" },
+            { text: "You are not your thoughts. You are the observer of your thoughts.", author: "Unknown" },
+            { text: "Healing takes time, and asking for help is a courageous step.", author: "Unknown" },
+            { text: "Your present circumstances don't determine where you can go; they merely determine where you start.", author: "Nido Qubein" },
+            { text: "Self-care is not selfish. You cannot serve from an empty vessel.", author: "Eleanor Brown" },
+            { text: "The bravest thing I ever did was continuing my life when I wanted to die.", author: "Juliette Lewis" },
+            { text: "Mental health is not a destination, but a process. It's about how you drive, not where you're going.", author: "Unknown" },
+            { text: "There is hope, even when your brain tells you there isn't.", author: "John Green" },
+            { text: "You don't have to control your thoughts. You just have to stop letting them control you.", author: "Dan Millman" },
+            { text: "Small steps every day lead to big changes over time.", author: "Unknown" }
+        ];
+        
+        // Get auth token
+        function getAuthToken() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'index.html';
+            }
+            return token;
+        }
+        
+        // Load dashboard data
+        async function loadDashboard() {
+            try {
+                // Get user info
+                const userResponse = await fetch(`${API_URL}/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+                });
+                
+                if (userResponse.ok) {
+                    const user = await userResponse.json();
+                    const displayName = user.full_name || user.username;
+                    document.getElementById('userName').textContent = displayName;
+                    document.getElementById('userNameDisplay').textContent = displayName;
+                } else if (userResponse.status === 401) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
+                // Load dashboard stats
+                await loadDashboardStats();
+                
+                // Load daily quote
+                loadDailyQuote();
+                
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+        
+        // Load dashboard statistics
+        async function loadDashboardStats() {
+            try {
+                const response = await fetch(`${API_URL}/dashboard/stats`, {
+                    headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+                });
+                
+                if (response.ok) {
+                    const stats = await response.json();
+                    document.getElementById('chatCount').textContent = stats.total_messages || 0;
+                    document.getElementById('appointmentCount').textContent = stats.upcoming_appointments || 0;
+                    document.getElementById('completedCount').textContent = stats.completed_sessions || 0;
+                    document.getElementById('postCount').textContent = stats.community_posts || 0;
+                    
+                    // Calculate wellness score based on activities
+                    const wellnessScore = Math.min(100, Math.floor(
+                        (stats.completed_sessions * 5) + 
+                        (stats.total_messages / 10) + 
+                        (stats.community_posts * 3)
+                    ));
+                    document.getElementById('wellnessScore').innerHTML = (wellnessScore || 75) + '<span class="stat-unit">%</span>';
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+                setDefaultStats();
+            }
+        }
+        
+        // Set default stats if API fails
+        function setDefaultStats() {
+            document.getElementById('chatCount').textContent = '0';
+            document.getElementById('appointmentCount').textContent = '0';
+            document.getElementById('completedCount').textContent = '0';
+            document.getElementById('postCount').textContent = '0';
+            document.getElementById('wellnessScore').innerHTML = '75<span class="stat-unit">%</span>';
+        }
+        
+        // Load daily quote
+        function loadDailyQuote() {
+            const today = new Date().getDate();
+            const quoteIndex = today % quotes.length;
+            const quote = quotes[quoteIndex];
+            document.getElementById('dailyQuote').textContent = `"${quote.text}"`;
+            document.getElementById('quoteAuthor').textContent = `- ${quote.author}`;
+        }
+        
+        // Mood tracking
+        document.querySelectorAll('.mood-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const mood = btn.dataset.mood;
+                
+                // Remove selected class from all
+                document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                
+                // Send mood to chatbot
+                try {
+                    const response = await fetch(`${API_URL}/chat/send`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${getAuthToken()}`
+                        },
+                        body: JSON.stringify({ content: `I'm feeling ${mood} today` })
+                    });
+                    
+                    if (response.ok) {
+                        showNotification('Mood recorded! Thanks for sharing. 💙', 'success');
+                    }
+                } catch (error) {
+                    console.error('Error saving mood:', error);
+                }
+            });
+        });
+        
+        // Show notification
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.innerHTML = `
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'}"></i>
+                <span>${message}</span>
+            `;
+            notification.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#2ECC71' : '#1B2B4E'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 12px;
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+        
+        // Journal functions
+        function showJournalModal() {
+            document.getElementById('journalModal').style.display = 'flex';
+        }
+        
+        function closeJournalModal() {
+            document.getElementById('journalModal').style.display = 'none';
+            document.getElementById('journalEntry').value = '';
+        }
+        
+        document.getElementById('journalForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const entry = document.getElementById('journalEntry').value;
+            
+            if (entry.trim()) {
+                const journals = JSON.parse(localStorage.getItem('gratitude_journals') || '[]');
+                journals.unshift({
+                    entry: entry,
+                    date: new Date().toISOString()
+                });
+                localStorage.setItem('gratitude_journals', JSON.stringify(journals.slice(0, 30)));
+                
+                showNotification('Journal entry saved! 🌟', 'success');
+                closeJournalModal();
+            }
+        });
+        
+        // Breathing exercise
+        function startBreathingExercise() {
+            document.getElementById('breathingModal').style.display = 'flex';
+        }
+        
+        function closeBreathingModal() {
+            if (breathingInterval) {
+                clearInterval(breathingInterval);
+                breathingInterval = null;
+            }
+            document.getElementById('breathingModal').style.display = 'none';
+            breathingStep = 0;
+        }
+        
+        function startBreathing() {
+            if (breathingInterval) {
+                clearInterval(breathingInterval);
+            }
+            
+            breathingStep = 0;
+            const circle = document.getElementById('breathingCircle');
+            const text = document.getElementById('breathingText');
+            
+            const steps = [
+                { text: "Inhale...", duration: 4000, scale: 1.5, color: "#4CAF50" },
+                { text: "Hold...", duration: 4000, scale: 1.5, color: "#FFD700" },
+                { text: "Exhale...", duration: 4000, scale: 1, color: "#1B2B4E" },
+                { text: "Rest...", duration: 2000, scale: 1, color: "#2A3D62" }
+            ];
+            
+            let stepIndex = 0;
+            
+            function updateBreathing() {
+                const step = steps[stepIndex];
+                text.textContent = step.text;
+                circle.style.transform = `scale(${step.scale})`;
+                circle.style.backgroundColor = step.color;
+                
+                stepIndex = (stepIndex + 1) % steps.length;
+            }
+            
+            updateBreathing();
+            breathingInterval = setInterval(updateBreathing, 4000);
+            
+            setTimeout(() => {
+                if (breathingInterval) {
+                    clearInterval(breathingInterval);
+                    breathingInterval = null;
+                    showNotification('Great job! Breathing exercise completed. 🧘', 'success');
+                    closeBreathingModal();
+                }
+            }, 120000);
+        }
+        
+        // Logout function
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('username');
+            window.location.href = 'index.html';
+        }
+        
+        // Load dashboard when page loads
+        document.addEventListener('DOMContentLoaded', loadDashboard);
+    </script>
+</body>
+</html>

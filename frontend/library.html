@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wellness Library - Nafsiyat AI</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Wellness Library Enhanced Styles */
+        :root {
+            --primary: #1B2B4E;
+            --primary-dark: #0F1A33;
+            --primary-light: #2A3D62;
+            --accent: #FFD700;
+            --accent-dark: #DAA520;
+            --accent-light: #FFE44D;
+            --success: #2ECC71;
+            --danger: #E74C3C;
+            --dark: #1a1a2e;
+            --gray: #6c6c7a;
+            --light: #f5f5f7;
+            --white: #FFFFFF;
+            --shadow: 0 2px 10px rgba(0,0,0,0.08);
+            --shadow-lg: 0 4px 20px rgba(0,0,0,0.12);
+            --border-radius: 16px;
+        }
+
+        /* Library Header */
+        .library-header {
+            background: linear-gradient(135deg, #1B2B4E 0%, #2A3D62 100%);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .library-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        
+        .library-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+        
+        .library-header h1 i {
+            color: #FFD700;
+            margin-right: 0.5rem;
+        }
+        
+        .library-header p {
+            opacity: 0.9;
+            position: relative;
+        }
+        
+        /* Filters Section */
+        .filters-section {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            border: 1px solid #e8e8ec;
+        }
+        
+        .library-filters {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .search-bar {
+            flex: 1;
+            position: relative;
+        }
+        
+        .search-bar i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #DAA520;
+        }
+        
+        .search-bar input {
+            width: 100%;
+            padding: 0.85rem 1rem 0.85rem 2.8rem;
+            border: 1px solid #e8e8ec;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+        
+        .search-bar input:focus {
+            outline: none;
+            border-color: #FFD700;
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+        }
+        
+        .filter-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .filter-select {
+            padding: 0.85rem;
+            border: 1px solid #e8e8ec;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .filter-select:focus {
+            outline: none;
+            border-color: #FFD700;
+        }
+        
+        /* Language Toggle */
+        .language-toggle {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            justify-content: flex-end;
+        }
+        
+        .lang-btn {
+            padding: 0.6rem 1.5rem;
+            background: white;
+            border: 1px solid #e8e8ec;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            color: #1B2B4E;
+        }
+        
+        .lang-btn:hover {
+            border-color: #FFD700;
+            transform: translateY(-2px);
+        }
+        
+        .lang-btn.active {
+            background: linear-gradient(135deg, #1B2B4E 0%, #2A3D62 100%);
+            color: #FFD700;
+            border-color: #FFD700;
+        }
+        
+        /* Content Grid */
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .content-card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid #e8e8ec;
+            position: relative;
+        }
+        
+        .content-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .content-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .content-card:hover::before {
+            opacity: 1;
+        }
+        
+        .content-image {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1B2B4E 0%, #2A3D62 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .content-image i {
+            font-size: 4rem;
+            color: #FFD700;
+            opacity: 0.9;
+            transition: transform 0.3s;
+        }
+        
+        .content-card:hover .content-image i {
+            transform: scale(1.1);
+        }
+        
+        .content-type {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(0,0,0,0.7);
+            color: var(--white);
+            padding: 0.3rem 1rem;
+            border-radius: 25px;
+            font-size: 0.75rem;
+            text-transform: capitalize;
+            font-weight: 500;
+        }
+        
+        .content-info {
+            padding: 1.5rem;
+        }
+        
+        .content-info h3 {
+            margin-bottom: 0.75rem;
+            color: #1B2B4E;
+            font-size: 1.2rem;
+            line-height: 1.4;
+            font-weight: 700;
+        }
+        
+        .content-meta {
+            display: flex;
+            gap: 1rem;
+            color: #6c6c7a;
+            font-size: 0.85rem;
+        }
+        
+        .content-meta i {
+            margin-right: 0.25rem;
+            color: #DAA520;
+        }
+        
+        /* Modal Styles */
+        .modal-content {
+            border-top: 4px solid #FFD700;
+        }
+        
+        .content-detail-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e8e8ec;
+        }
+        
+        .content-detail-header h1 {
+            margin-bottom: 0.5rem;
+            color: #1B2B4E;
+            font-size: 1.8rem;
+        }
+        
+        .content-detail-meta {
+            display: flex;
+            gap: 1rem;
+            color: #6c6c7a;
+            font-size: 0.9rem;
+        }
+        
+        .content-detail-meta i {
+            color: #DAA520;
+        }
+        
+        .content-detail-body {
+            line-height: 1.8;
+            color: #2d2d3d;
+        }
+        
+        .content-detail-body.urdu-text {
+            font-family: 'Noto Nastaliq Urdu', serif;
+            direction: rtl;
+            text-align: right;
+            line-height: 2;
+            font-size: 1.1rem;
+        }
+        
+        .content-detail-body h2 {
+            margin: 1.5rem 0 1rem;
+            color: #1B2B4E;
+        }
+        
+        .content-detail-body h3 {
+            margin: 1rem 0 0.5rem;
+            color: #1B2B4E;
+        }
+        
+        .content-detail-body ul, .content-detail-body ol {
+            margin: 1rem 0;
+            padding-left: 2rem;
+        }
+        
+        .content-detail-body li {
+            margin: 0.5rem 0;
+        }
+        
+        .content-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e8e8ec;
+        }
+        
+        .tag {
+            background: #f5f5f7;
+            padding: 0.3rem 1rem;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            color: #1B2B4E;
+            transition: all 0.3s;
+        }
+        
+        .tag:hover {
+            background: #FFD700;
+            color: #1B2B4E;
+            transform: translateY(-2px);
+        }
+        
+        /* Loading States */
+        .loading, .no-data, .error {
+            text-align: center;
+            padding: 3rem;
+            color: #6c6c7a;
+        }
+        
+        .spinner {
+            border: 3px solid #e8e8ec;
+            border-top: 3px solid #FFD700;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Urdu Text Support */
+        .urdu-text {
+            font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Alvi Lahori Nastaleeq', 'Urdu Typesetting', serif;
+            direction: rtl;
+            text-align: right;
+            line-height: 2;
+            font-size: 1.1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .library-filters {
+                flex-direction: column;
+            }
+            
+            .filter-group {
+                justify-content: space-between;
+            }
+            
+            .filter-group select {
+                flex: 1;
+            }
+            
+            .library-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .language-toggle {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <i class="fas fa-brain"></i>
+                <span>Nafsiyat AI</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="chatbot.html" class="nav-item">
+                    <i class="fas fa-robot"></i>
+                    <span>AI Chatbot</span>
+                </a>
+                <a href="therapy.html" class="nav-item">
+                    <i class="fas fa-video"></i>
+                    <span>Teleconsultation</span>
+                </a>
+                <a href="community.html" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    <span>Community</span>
+                </a>
+                <a href="library.html" class="nav-item active">
+                    <i class="fas fa-book-open"></i>
+                    <span>Wellness Library</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="userNameDisplay">User</span>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Library Header -->
+            <div class="library-header">
+                <h1><i class="fas fa-book-open"></i> Wellness Library</h1>
+                <p>Discover authentic articles, guides, and resources for mental wellness</p>
+            </div>
+
+            <!-- Filters Section -->
+            <div class="filters-section">
+                <div class="library-filters">
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Search articles by title, category, or tags..." onkeyup="searchContent()">
+                    </div>
+                    <div class="filter-group">
+                        <select id="categoryFilter" class="filter-select" onchange="filterContent()">
+                            <option value="">All Categories</option>
+                            <option value="Anxiety">😰 Anxiety</option>
+                            <option value="Depression">😔 Depression</option>
+                            <option value="Stress">😫 Stress</option>
+                            <option value="Mindfulness">🧘 Mindfulness</option>
+                            <option value="Relationships">💕 Relationships</option>
+                            <option value="Self-Care">✨ Self-Care</option>
+                        </select>
+                        <select id="typeFilter" class="filter-select" onchange="filterContent()">
+                            <option value="">All Types</option>
+                            <option value="article">📄 Articles</option>
+                            <option value="guide">📘 Guides</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Language Toggle -->
+            <div class="language-toggle">
+                <button class="lang-btn active" onclick="setLanguage('english')">
+                    <i class="fas fa-language"></i> English
+                </button>
+                <button class="lang-btn" onclick="setLanguage('urdu')">
+                    <i class="fas fa-urdu"></i> اردو
+                </button>
+            </div>
+
+            <!-- Content Grid -->
+            <div id="contentGrid" class="content-grid">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading wellness content...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Content Modal -->
+    <div id="contentModal" class="modal">
+        <div class="modal-content" style="max-width: 800px; max-height: 85vh; overflow-y: auto;">
+            <span class="close" onclick="closeContentModal()">&times;</span>
+            <div id="contentDetail"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000/api';
+        let currentLanguage = 'english';
+
+        // Authentic Articles Data
+        const articlesData = [
+            {
+                id: 1,
+                title: "Understanding Anxiety: Causes, Symptoms, and Evidence-Based Treatments",
+                title_urdu: "پریشانی کو سمجھنا: وجوہات، علامات اور سائنسی علاج",
+                category: "Anxiety",
+                type: "article",
+                content_english: `<h2>What is Anxiety?</h2>
+<p>Anxiety is a normal human emotion that everyone experiences at times. Many people feel anxious when facing problems at work, before taking a test, or making important decisions. However, anxiety disorders are different. They are a group of mental illnesses that cause constant and overwhelming anxiety and fear.</p>
+
+<h3>Common Symptoms of Anxiety Disorders:</h3>
+<ul>
+<li><strong>Physical symptoms:</strong> Racing heart, shortness of breath, sweating, trembling, fatigue, headaches, muscle tension</li>
+<li><strong>Psychological symptoms:</strong> Excessive worry, racing thoughts, difficulty concentrating, irritability, restlessness</li>
+<li><strong>Behavioral symptoms:</strong> Avoiding situations that trigger anxiety, seeking reassurance, difficulty sleeping</li>
+</ul>
+
+<h3>Evidence-Based Treatments for Anxiety:</h3>
+<p><strong>Cognitive Behavioral Therapy (CBT):</strong> CBT is the gold-standard treatment for anxiety disorders. It helps you identify and change negative thought patterns and behaviors that maintain anxiety. Research shows that 60-80% of people with anxiety disorders improve significantly with CBT.</p>
+
+<p><strong>Medication:</strong> Selective Serotonin Reuptake Inhibitors (SSRIs) and Serotonin-Norepinephrine Reuptake Inhibitors (SNRIs) are commonly prescribed for anxiety disorders. These medications work by balancing brain chemicals that affect mood.</p>
+
+<p><strong>Mindfulness-Based Stress Reduction (MBSR):</strong> This 8-week program combines mindfulness meditation and yoga to reduce anxiety and improve emotional regulation.</p>
+
+<h3>Self-Help Strategies You Can Start Today:</h3>
+<ul>
+<li><strong>Deep Breathing:</strong> Practice the 4-7-8 technique - inhale for 4 seconds, hold for 7 seconds, exhale for 8 seconds</li>
+<li><strong>Progressive Muscle Relaxation:</strong> Tense and relax each muscle group from your toes to your head</li>
+<li><strong>Regular Exercise:</strong> 30 minutes of moderate exercise 5 days a week can reduce anxiety significantly</li>
+<li><strong>Limit Caffeine and Alcohol:</strong> Both can trigger or worsen anxiety symptoms</li>
+<li><strong>Maintain a Sleep Schedule:</strong> Aim for 7-9 hours of quality sleep per night</li>
+</ul>
+
+<p><strong>When to Seek Professional Help:</strong> If anxiety is interfering with your daily life, relationships, or work performance, consider speaking with a mental health professional. Treatment is highly effective, and you don't have to suffer alone.</p>`,
+                content_urdu: `<div class="urdu-text">
+<h2>پریشانی کیا ہے؟</h2>
+<p>پریشانی ایک عام انسانی جذبہ ہے جس کا سامنا ہر انسان کو کبھی نہ کبھی ہوتا ہے۔ بہت سے لوگ کام پر مسائل کا سامنا کرتے ہوئے، امتحان سے پہلے، یا اہم فیصلے کرتے وقت پریشان ہو جاتے ہیں۔ تاہم، پریشانی کی بیماریاں مختلف ہوتی ہیں۔ یہ دماغی بیماریوں کا ایک گروپ ہے جو مسلسل اور شدید پریشانی اور خوف کا باعث بنتا ہے۔</p>
+
+<h3>پریشانی کی بیماریوں کی عام علامات:</h3>
+<ul>
+<li><strong>جسمانی علامات:</strong> دل کی تیز دھڑکن، سانس کی قلت، پسینہ آنا، کپکپاہٹ، تھکاوٹ، سر درد، پٹھوں میں تناؤ</li>
+<li><strong>نفسیاتی علامات:</strong> ضرورت سے زیادہ فکر، ذہن میں دوڑتے خیالات، توجہ مرکوز کرنے میں دشواری، چڑچڑاپن، بے چینی</li>
+<li><strong>رویے کی علامات:</strong> پریشانی پیدا کرنے والے حالات سے بچنا، یقین دہانی کی تلاش، نیند آنے میں دشواری</li>
+</ul>
+
+<h3>پریشانی کے لیے سائنسی علاج:</h3>
+<p><strong>علمی رویے کی تھراپی (سی بی ٹی):</strong> سی بی ٹی پریشانی کی بیماریوں کے لیے سونے کا معیاری علاج ہے۔ یہ آپ کو منفی سوچ کے نمونوں اور رویوں کی شناخت اور انہیں تبدیل کرنے میں مدد کرتا ہے جو پریشانی کو برقرار رکھتے ہیں۔</p>
+
+<h3>آج ہی شروع کرنے کی حکمت عملی:</h3>
+<ul>
+<li><strong>گہری سانس:</strong> 4-7-8 تکنیک پر عمل کریں</li>
+<li><strong>باقاعدہ ورزش:</strong> ہفتے میں 5 دن 30 منٹ کی ورزش</li>
+<li><strong>کیفین اور الکحل محدود کریں</strong></li>
+</ul>
+</div>`,
+                tags: ["anxiety", "mental health", "CBT", "treatment"],
+                views: 0,
+                image_icon: "fas fa-brain"
+            },
+            {
+                id: 2,
+                title: "Understanding Depression: A Comprehensive Guide",
+                title_urdu: "ڈپریشن کو سمجھنا: ایک جامع رہنما",
+                category: "Depression",
+                type: "article",
+                content_english: `<h2>What is Depression?</h2>
+<p>Depression (major depressive disorder) is a common and serious medical illness that negatively affects how you feel, the way you think, and how you act. Fortunately, it is also treatable. Depression causes feelings of sadness and/or a loss of interest in activities you once enjoyed.</p>
+
+<h3>Signs and Symptoms of Depression:</h3>
+<ul>
+<li>Persistent sad, anxious, or "empty" mood</li>
+<li>Feelings of hopelessness, pessimism, or worthlessness</li>
+<li>Loss of interest or pleasure in hobbies and activities</li>
+<li>Decreased energy, fatigue, or feeling "slowed down"</li>
+<li>Difficulty concentrating, remembering, or making decisions</li>
+<li>Changes in appetite or sleep patterns</li>
+</ul>
+
+<h3>Effective Treatments for Depression:</h3>
+<p><strong>Psychotherapy:</strong> Cognitive Behavioral Therapy (CBT) and Interpersonal Therapy (IPT) are highly effective.</p>
+<p><strong>Medication:</strong> Antidepressants can help balance brain chemicals.</p>
+<p><strong>Lifestyle Changes:</strong> Regular exercise, healthy diet, adequate sleep, and social connection are crucial for recovery.</p>
+
+<h3>When to Seek Emergency Help:</h3>
+<p>If you are thinking about hurting yourself, please seek immediate help by calling emergency services.</p>`,
+                content_urdu: `<div class="urdu-text">
+<h2>ڈپریشن کیا ہے؟</h2>
+<p>ڈپریشن ایک عام اور سنگین طبی بیماری ہے جو منفی طور پر آپ کے محسوس کرنے، سوچنے اور عمل کرنے کے طریقے کو متاثر کرتی ہے۔</p>
+
+<h3>ڈپریشن کی علامات:</h3>
+<ul>
+<li>مسلسل اداس، پریشان، یا "خالی" موڈ</li>
+<li>مایوسی، منفی سوچ، یا بے وقعتی کے جذبات</li>
+<li>شوق اور سرگرمیوں میں دلچسپی کا خاتمہ</li>
+<li>توانائی میں کمی، تھکاوٹ</li>
+<li>توجہ مرکوز کرنے میں دشواری</li>
+</ul>
+
+<h3>ڈپریشن کے لیے موثر علاج:</h3>
+<p><strong>نفسیاتی علاج:</strong> علمی رویے کی تھراپی (سی بی ٹی) بہت مؤثر ہے۔</p>
+<p><strong>طرز زندگی میں تبدیلیاں:</strong> باقاعدگی سے ورزش، صحت مند غذا، کافی نیند، اور سماجی رابطہ بحالی کے لیے بہت ضروری ہیں۔</p>
+</div>`,
+                tags: ["depression", "mental health", "treatment", "recovery"],
+                views: 0,
+                image_icon: "fas fa-heartbeat"
+            },
+            {
+                id: 3,
+                title: "Stress Management: Evidence-Based Strategies That Work",
+                title_urdu: "تناؤ کا انتظام: مؤثر حکمت عملی جو کام کرتی ہے",
+                category: "Stress",
+                type: "guide",
+                content_english: `<h2>Understanding Stress</h2>
+<p>Stress is your body's response to demands or threats. While short-term stress can be helpful, chronic stress can have serious negative effects on your physical and mental health.</p>
+
+<h3>Proven Stress Management Techniques:</h3>
+<p><strong>1. Mindfulness Meditation:</strong> Practice focusing on your breath for 5-10 minutes daily.</p>
+<p><strong>2. Regular Physical Activity:</strong> Even a 10-minute walk can immediately reduce stress levels.</p>
+<p><strong>3. Social Connection:</strong> Strong social support is one of the most powerful buffers against stress.</p>
+<p><strong>4. Sleep Hygiene:</strong> Maintain a consistent sleep schedule for 7-9 hours of quality sleep.</p>
+
+<h3>The 4 A's of Stress Management:</h3>
+<ul>
+<li><strong>Avoid</strong> unnecessary stress</li>
+<li><strong>Alter</strong> the situation when possible</li>
+<li><strong>Adapt</strong> to the stressor</li>
+<li><strong>Accept</strong> things you can't change</li>
+</ul>`,
+                content_urdu: `<div class="urdu-text">
+<h2>تناؤ کو سمجھنا</h2>
+<p>تناؤ آپ کے جسم کا مطالبات یا خطرات کا ردعمل ہے۔ دائمی تناؤ آپ کی جسمانی اور ذہنی صحت پر سنگین منفی اثرات مرتب کر سکتا ہے۔</p>
+
+<h3>تناؤ کے انتظام کی مؤثر تکنیکیں:</h3>
+<p><strong>1. ذہن سازی کا مراقبہ:</strong> روزانہ 5-10 منٹ اپنی سانسوں پر توجہ مرکوز کریں۔</p>
+<p><strong>2. باقاعدہ جسمانی سرگرمی:</strong> یہاں تک کہ 10 منٹ کی چہل قدمی فوری طور پر تناؤ کی سطح کو کم کر سکتی ہے۔</p>
+<p><strong>3. سماجی رابطہ:</strong> مضبوط سماجی مدد تناؤ کے خلاف سب سے طاقتور بفر ہے۔</p>
+</div>`,
+                tags: ["stress", "management", "mindfulness", "self-care"],
+                views: 0,
+                image_icon: "fas fa-spa"
+            },
+            {
+                id: 4,
+                title: "Mindfulness Meditation: A Beginner's Guide",
+                title_urdu: "ذہن سازی کا مراقبہ: ابتدائی افراد کے لیے رہنما",
+                category: "Mindfulness",
+                type: "guide",
+                content_english: `<h2>What is Mindfulness?</h2>
+<p>Mindfulness is the practice of purposely focusing your attention on the present moment—and accepting it without judgment.</p>
+
+<h3>Simple Mindfulness Exercises:</h3>
+<p><strong>1. Mindful Breathing (5 minutes):</strong> Sit comfortably, focus on your breath, and when your mind wanders, gently bring it back.</p>
+<p><strong>2. Body Scan Meditation (10-15 minutes):</strong> Slowly move your attention through your body from feet to head.</p>
+<p><strong>3. Mindful Walking (10 minutes):</strong> Walk slowly and pay attention to the physical sensations of walking.</p>
+
+<h3>Tips for Building a Mindfulness Practice:</h3>
+<ul>
+<li>Start small—even 5 minutes daily is beneficial</li>
+<li>Practice at the same time each day</li>
+<li>Use guided meditations</li>
+<li>Be patient with yourself</li>
+</ul>`,
+                content_urdu: `<div class="urdu-text">
+<h2>ذہن سازی کیا ہے؟</h2>
+<p>ذہن سازی موجودہ لمحے پر اپنی توجہ مرکوز کرنے کی مشق ہے - اور اسے بغیر کسی فیصلے کے قبول کرنا۔</p>
+
+<h3>آسان ذہن سازی کی مشقیں:</h3>
+<p><strong>1. ذہن سازی سے سانس لینا (5 منٹ):</strong> آرام سے بیٹھیں، اپنی سانسوں پر توجہ دیں۔</p>
+<p><strong>2. باڈی اسکین مراقبہ (10-15 منٹ):</strong> آہستہ آہستہ اپنی توجہ اپنے پورے جسم میں منتقل کریں۔</p>
+</div>`,
+                tags: ["mindfulness", "meditation", "breathing", "calm"],
+                views: 0,
+                image_icon: "fas fa-peace"
+            },
+            {
+                id: 5,
+                title: "Building Healthy Relationships: Communication Skills That Work",
+                title_urdu: "صحت مند تعلقات استوار کرنا: مواصلاتی مہارتیں",
+                category: "Relationships",
+                type: "article",
+                content_english: `<h2>The Foundation of Healthy Relationships</h2>
+<p>Healthy relationships are essential for mental wellness. They provide support, reduce stress, and increase happiness.</p>
+
+<h3>Essential Communication Skills:</h3>
+<p><strong>1. Active Listening:</strong> Give your full attention, don't interrupt, and validate the other person's feelings.</p>
+<p><strong>2. "I" Statements:</strong> Express your feelings without blaming: "I feel [emotion] when [situation]."</p>
+<p><strong>3. Setting Healthy Boundaries:</strong> Communicate your limits clearly and respectfully.</p>
+<p><strong>4. Managing Conflict Constructively:</strong> Stay calm, listen to understand, and aim for win-win solutions.</p>
+<p><strong>5. Expressing Appreciation:</strong> Regularly express gratitude for small things.</p>`,
+                content_urdu: `<div class="urdu-text">
+<h2>صحت مند تعلقات کی بنیاد</h2>
+<p>صحت مند تعلقات دماغی تندرستی کے لیے ضروری ہیں۔ وہ مدد فراہم کرتے ہیں، تناؤ کو کم کرتے ہیں، اور خوشی میں اضافہ کرتے ہیں۔</p>
+
+<h3>ضروری مواصلاتی مہارتیں:</h3>
+<p><strong>1. فعال سننا:</strong> پوری توجہ دیں، مداخلت نہ کریں۔</p>
+<p><strong>2. صحت مند حدود مقرر کرنا:</strong> اپنی حدود واضح طور پر بتائیں۔</p>
+<p><strong>3. تعمیری طور پر تنازعہ کا انتظام:</strong> پرسکون رہیں، سمجھنے کے لیے سنیں۔</p>
+</div>`,
+                tags: ["relationships", "communication", "boundaries"],
+                views: 0,
+                image_icon: "fas fa-hand-holding-heart"
+            }
+        ];
+
+        // Get auth token
+        function getAuthToken() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'index.html';
+            }
+            return token;
+        }
+
+        // Load content from local data
+        function loadContent() {
+            const container = document.getElementById('contentGrid');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading wellness content...</p></div>';
+            
+            const category = document.getElementById('categoryFilter').value;
+            const type = document.getElementById('typeFilter').value;
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            
+            let filtered = [...articlesData];
+            
+            if (category) {
+                filtered = filtered.filter(item => item.category === category);
+            }
+            
+            if (type) {
+                filtered = filtered.filter(item => item.type === type);
+            }
+            
+            if (search) {
+                filtered = filtered.filter(item => 
+                    item.title.toLowerCase().includes(search) || 
+                    item.title_urdu.toLowerCase().includes(search) ||
+                    item.tags.some(tag => tag.toLowerCase().includes(search))
+                );
+            }
+            
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="no-data"><i class="fas fa-book" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>No content found.<br>Try different filters or search terms!</div>';
+            } else {
+                container.innerHTML = filtered.map(content => `
+                    <div class="content-card" onclick="viewContent(${content.id})">
+                        <div class="content-image">
+                            <i class="${content.image_icon}"></i>
+                            <span class="content-type">${content.type}</span>
+                        </div>
+                        <div class="content-info">
+                            <h3>${escapeHtml(currentLanguage === 'english' ? content.title : content.title_urdu)}</h3>
+                            <div class="content-meta">
+                                <span><i class="fas fa-tag"></i> ${content.category}</span>
+                                <span><i class="fas fa-eye"></i> ${content.views} views</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function viewContent(contentId) {
+            const content = articlesData.find(c => c.id === contentId);
+            if (!content) return;
+            
+            content.views++;
+            
+            const isEnglish = currentLanguage === 'english';
+            const detailHtml = `
+                <div class="content-detail">
+                    <div class="content-detail-header">
+                        <h1>${escapeHtml(isEnglish ? content.title : content.title_urdu)}</h1>
+                        <div class="content-detail-meta">
+                            <span><i class="fas fa-tag"></i> ${content.category}</span>
+                            <span><i class="fas fa-eye"></i> ${content.views} views</span>
+                        </div>
+                    </div>
+                    <div class="content-detail-body ${!isEnglish ? 'urdu-text' : ''}">
+                        ${isEnglish ? content.content_english : content.content_urdu}
+                    </div>
+                    <div class="content-tags">
+                        ${content.tags.map(tag => `<span class="tag">#${tag}</span>`).join('')}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('contentDetail').innerHTML = detailHtml;
+            document.getElementById('contentModal').style.display = 'flex';
+        }
+
+        function filterContent() {
+            loadContent();
+        }
+
+        function searchContent() {
+            clearTimeout(window.searchTimeout);
+            window.searchTimeout = setTimeout(() => {
+                loadContent();
+            }, 500);
+        }
+
+        function setLanguage(language) {
+            currentLanguage = language;
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            loadContent();
+        }
+
+        function closeContentModal() {
+            document.getElementById('contentModal').style.display = 'none';
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('username');
+            window.location.href = 'index.html';
+        }
+
+        // Load user name
+        async function loadUserName() {
+            try {
+                const response = await fetch(`${API_URL}/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+                });
+                if (response.ok) {
+                    const user = await response.json();
+                    const displayName = user.full_name || user.username;
+                    document.getElementById('userNameDisplay').textContent = displayName;
+                }
+            } catch (error) {
+                console.error('Error loading user:', error);
+            }
+        }
+
+        // Load initial content
+        loadUserName();
+        loadContent();
+    </script>
+</body>
+</html>

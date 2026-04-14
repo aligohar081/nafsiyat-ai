@@ -1,4 +1,5 @@
-const API_URL = 'http://localhost:8000/api';
+// API Configuration - Use global config or fallback to localhost
+const API_URL = window.API_URL || 'http://localhost:8000/api';
 let currentSessionId = null;
 let allSessions = [];
 

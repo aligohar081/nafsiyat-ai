@@ -3,15 +3,15 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 
-# Use SQLite - no external database needed!
+# Use SQLite database (file-based, no external service needed)
 DATABASE_URL = "sqlite:///./nafsiyat.db"
 
-print("✅ Using SQLite database - No PostgreSQL required")
+print("✅ Using SQLite database for Railway deployment")
 
-# Create engine for SQLite
+# Create engine with SQLite-specific settings
 engine = create_engine(
     DATABASE_URL, 
-    connect_args={"check_same_thread": False}  # Needed for SQLite
+    connect_args={"check_same_thread": False}
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

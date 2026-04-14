@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Password hashing - using bcrypt with proper settings
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
 

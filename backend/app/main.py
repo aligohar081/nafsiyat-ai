@@ -1,5 +1,6 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from typing import List, Optional
@@ -9,15 +10,10 @@ import uuid
 from .database import engine, get_db, Base
 from . import models, schemas, auth, chatbot, teleconsultation, community
 
-# Create tables - This will work with SQLite
+# Create tables
 Base.metadata.create_all(bind=engine)
 
-
-app = FastAPI(
-    title="Nafsiyat AI", 
-    description="Mental Wellness Platform", 
-    version="1.0.0"
-)
+app = FastAPI(title="Nafsiyat AI", description="Mental Wellness Platform", version="1.0.0")
 
 # CORS middleware
 app.add_middleware(
@@ -31,10 +27,12 @@ app.add_middleware(
 # ============ Helper Functions for Sample Data ============
 
 def create_sample_psychologists(db: Session):
-    """Create sample psychologists"""
+    """Create sample psychologists - safely without duplicates"""
     try:
+        # Check if psychologists already exist
         existing = db.query(models.Psychologist).first()
         if existing:
+            print("✅ Psychologists already exist, skipping creation")
             return
             
         psychologists_data = [
@@ -71,6 +69,12 @@ def create_sample_psychologists(db: Session):
         ]
         
         for doc in psychologists_data:
+            # Check if user already exists
+            existing_user = db.query(models.User).filter(models.User.username == doc["username"]).first()
+            if existing_user:
+                print(f"⚠️ User {doc['username']} already exists, skipping")
+                continue
+                
             user = models.User(
                 email=doc["email"],
                 username=doc["username"],
@@ -103,6 +107,7 @@ def create_sample_wellness_content(db: Session):
     try:
         existing = db.query(models.WellnessContent).first()
         if existing:
+            print("✅ Wellness content already exists, skipping creation")
             return
             
         sample_contents = [
@@ -245,17 +250,6 @@ async def send_message(
     response = await chatbot.process_chat_message(db, current_user.id, message.content)
     return response
 
-@app.post("/api/chat/send-with-session")
-async def send_message_with_session(
-    message: schemas.ChatMessageBase,
-    session_id: int = None,
-    current_user: models.User = Depends(auth.get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Send a message with a specific session ID"""
-    response = await chatbot.process_chat_message(db, current_user.id, message.content, session_id)
-    return response
-
 @app.post("/api/chat/new-session")
 async def create_new_session(
     current_user: models.User = Depends(auth.get_current_user),
@@ -267,13 +261,7 @@ async def create_new_session(
     db.commit()
     db.refresh(new_session)
     
-    print(f"✨ New session created: {new_session.id} for user: {current_user.id}")
-    
-    return {
-        "session_id": new_session.id, 
-        "message": "New session created successfully",
-        "started_at": new_session.started_at
-    }
+    return {"session_id": new_session.id, "message": "New session created"}
 
 @app.get("/api/chat/history")
 def get_chat_history(
@@ -303,8 +291,7 @@ def get_chat_history(
             "id": session.id,
             "title": title,
             "preview": preview,
-            "started_at": session.started_at,
-            "message_count": db.query(models.ChatMessage).filter(models.ChatMessage.session_id == session.id).count()
+            "started_at": session.started_at
         })
     
     if sessions:
@@ -354,7 +341,7 @@ async def get_session_messages(
             "timestamp": msg.timestamp.isoformat() if msg.timestamp else None
         })
     
-    return {"session_id": session_id, "messages": messages_data, "started_at": session.started_at}
+    return {"session_id": session_id, "messages": messages_data}
 
 @app.delete("/api/chat/session/{session_id}")
 async def delete_session(
@@ -816,8 +803,6 @@ def startup_event():
     db.close()
     print("✅ Nafsiyat AI is ready!")
     print(f"📡 Groq API configured: {bool(os.getenv('GROQ_API_KEY')) and os.getenv('GROQ_API_KEY') != 'your-groq-api-key-here'}")
-
-# ============ Main Entry Point ============
 
 if __name__ == "__main__":
     import uvicorn

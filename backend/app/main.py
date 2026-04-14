@@ -1,18 +1,17 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Query
+from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from typing import List, Optional
 import os
 import uuid
 
-# Import from local modules
 from .database import engine, get_db, Base
 from . import models, schemas, auth, chatbot, teleconsultation, community
 
-# Create tables
+# Create tables - This will work with SQLite
 Base.metadata.create_all(bind=engine)
+
 
 app = FastAPI(
     title="Nafsiyat AI", 

@@ -250,6 +250,17 @@ async def send_message(
     response = await chatbot.process_chat_message(db, current_user.id, message.content)
     return response
 
+@app.post("/api/chat/send-with-session")
+async def send_message_with_session(
+    message: schemas.ChatMessageBase,
+    session_id: int = None,
+    current_user: models.User = Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Send a message with a specific session ID"""
+    response = await chatbot.process_chat_message(db, current_user.id, message.content, session_id)
+    return response
+
 @app.post("/api/chat/new-session")
 async def create_new_session(
     current_user: models.User = Depends(auth.get_current_user),

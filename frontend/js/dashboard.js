@@ -1,5 +1,4 @@
-// API Configuration - Use global config or fallback to localhost
-const API_URL = window.API_URL || 'http://localhost:8000/api';
+
 
 function getAuthToken() {
     const token = localStorage.getItem('token');

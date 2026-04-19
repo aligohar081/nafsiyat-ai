@@ -398,7 +398,7 @@ function showCrisisAlert() {
                 <i class="fas fa-exclamation-triangle"></i> Need Immediate Support?
             </p>
             <p style="margin-bottom: 0.5rem;">You're not alone. Help is available 24/7:</p>
-            <p style="margin-bottom: 0.25rem;">📞 Rozan Helpline: 0311-778-6264</p>
+            <p style="margin-bottom: 0.25rem;">📞 GIKI Helpline: 0311-778-6264</p>
             <p>💙 You matter. Please reach out for support.</p>
         </div>
     `;

@@ -60,7 +60,6 @@ class AppointmentResponse(BaseModel):
     meeting_link: Optional[str]
     duration: Optional[int] = 60
 
-# Community Schemas
 class CommunityPostCreate(BaseModel):
     title: str = Field(..., max_length=200)
     content: str = Field(..., max_length=5000)
@@ -79,7 +78,7 @@ class CommunityPostResponse(BaseModel):
     is_anonymous: bool = True
 
 class CommunityCommentCreate(BaseModel):
-    content: str = Field(..., max_length=1000)
+    content: str = Field(..., max_length=1000, min_length=1)
     is_anonymous: bool = True
 
 class CommunityCommentResponse(BaseModel):

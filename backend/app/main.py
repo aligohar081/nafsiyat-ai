@@ -676,10 +676,11 @@ def get_post_detail(
         "comments": comments_list
     }
 
+
 @app.post("/api/community/posts/{post_id}/comments")
 def add_comment(
     post_id: int,
-    comment_data: schemas.CommunityPostCreate,
+    comment_data: schemas.CommunityCommentCreate,  # Use the new schema
     current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -689,11 +690,15 @@ def add_comment(
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
     
+    # Validate content
+    if not comment_data.content or len(comment_data.content.strip()) == 0:
+        raise HTTPException(status_code=422, detail="Comment content cannot be empty")
+    
     # Create the comment
     comment = models.CommunityComment(
         post_id=post_id,
         user_id=current_user.id,
-        content=comment_data.content,
+        content=comment_data.content.strip(),
         is_anonymous=comment_data.is_anonymous
     )
     db.add(comment)

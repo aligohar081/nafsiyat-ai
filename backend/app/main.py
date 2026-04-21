@@ -17,9 +17,16 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(title="Nafsiyat AI", description="Mental Wellness Platform", version="1.0.0")
 
 # CORS middleware
+# CORS middleware - Updated to allow your frontend domains
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://nafsiyat-ai.vercel.app",
+        "https://nafsiyat-ai-frontend.vercel.app",
+        "http://localhost:3000",
+        "http://localhost:8000",
+        "https://nafsiyat-ai-production.up.railway.app"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -789,111 +789,148 @@
         });
 
         async function viewPost(postId) {
-            currentPostId = postId;
+    currentPostId = postId;
+    
+    // Show loading state
+    const modalContent = document.getElementById('postDetail');
+    modalContent.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading post...</p></div>';
+    
+    try {
+        const response = await fetch(`${API_URL}/community/posts/${postId}`, {
+            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+        });
+        
+        if (response.ok) {
+            const post = await response.json();
             
-            try {
-                const response = await fetch(`${API_URL}/community/posts/${postId}`, {
-                    headers: { 'Authorization': `Bearer ${getAuthToken()}` }
-                });
+            document.getElementById('postDetail').innerHTML = `
+                <div class="post-detail-header">
+                    <div class="post-header">
+                        <div class="post-author">
+                            <div class="author-avatar">
+                                <i class="fas ${post.is_anonymous ? 'fa-user-secret' : 'fa-user-circle'}"></i>
+                            </div>
+                            <div class="author-info">
+                                <div class="author-name">
+                                    ${escapeHtml(post.author)}
+                                    ${post.is_anonymous ? '<span class="anonymous-badge">Anonymous</span>' : ''}
+                                </div>
+                                <div class="post-time">${formatDate(post.created_at)}</div>
+                            </div>
+                        </div>
+                        <div class="post-category">${post.category}</div>
+                    </div>
+                    <h1 class="post-detail-title">${escapeHtml(post.title)}</h1>
+                    <div class="post-detail-content">${escapeHtml(post.content)}</div>
+                    <div class="post-stats">
+                        <div class="stat-item">
+                            <i class="fas fa-heart"></i>
+                            <span>${post.likes}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Load comments
+            if (post.comments && post.comments.length > 0) {
+                const commentsHtml = post.comments.map(comment => `
+                    <div class="comment-card">
+                        <div class="comment-header">
+                            <div class="comment-author">
+                                <i class="fas ${comment.is_anonymous ? 'fa-user-secret' : 'fa-user-circle'}"></i>
+                                <strong>${escapeHtml(comment.author)}</strong>
+                            </div>
+                            <div class="comment-time">${formatDate(comment.created_at)}</div>
+                        </div>
+                        <div class="comment-text">${escapeHtml(comment.content)}</div>
+                    </div>
+                `).join('');
                 
-                if (response.ok) {
-                    const post = await response.json();
-                    
-                    document.getElementById('postDetail').innerHTML = `
-                        <div class="post-detail-header">
-                            <div class="post-header">
-                                <div class="post-author">
-                                    <div class="author-avatar">
-                                        <i class="fas ${post.is_anonymous ? 'fa-user-secret' : 'fa-user-circle'}"></i>
-                                    </div>
-                                    <div class="author-info">
-                                        <div class="author-name">
-                                            ${escapeHtml(post.author)}
-                                            ${post.is_anonymous ? '<span class="anonymous-badge">Anonymous</span>' : ''}
-                                        </div>
-                                        <div class="post-time">${formatDate(post.created_at)}</div>
-                                    </div>
-                                </div>
-                                <div class="post-category">${post.category}</div>
-                            </div>
-                            <h1 class="post-detail-title">${escapeHtml(post.title)}</h1>
-                            <div class="post-stats">
-                                <div class="stat-item">
-                                    <i class="fas fa-heart"></i>
-                                    <span>${post.likes}</span>
-                                </div>
-                            </div>
+                document.getElementById('commentsList').innerHTML = `
+                    <div class="comments-section">
+                        <div class="comments-title">
+                            <i class="fas fa-comments"></i>
+                            Comments (${post.comments.length})
                         </div>
-                        <div class="post-detail-content">${escapeHtml(post.content)}</div>
-                    `;
-                    
-                    // Load comments
-                    const commentsHtml = post.comments.map(comment => `
-                        <div class="comment-card">
-                            <div class="comment-header">
-                                <div class="comment-author">
-                                    <i class="fas ${comment.is_anonymous ? 'fa-user-secret' : 'fa-user-circle'}"></i>
-                                    <strong>${escapeHtml(comment.author)}</strong>
-                                </div>
-                                <div class="comment-time">${formatDate(comment.created_at)}</div>
-                            </div>
-                            <div class="comment-text">${escapeHtml(comment.content)}</div>
+                        ${commentsHtml}
+                    </div>
+                `;
+            } else {
+                document.getElementById('commentsList').innerHTML = `
+                    <div class="comments-section">
+                        <div class="comments-title">
+                            <i class="fas fa-comments"></i>
+                            Comments (0)
                         </div>
-                    `).join('');
-                    
-                    document.getElementById('commentsList').innerHTML = `
-                        <div class="comments-section">
-                            <div class="comments-title">
-                                <i class="fas fa-comments"></i>
-                                Comments (${post.comments.length})
-                            </div>
-                            ${commentsHtml || '<div class="no-data">No comments yet. Be the first to respond!</div>'}
-                        </div>
-                    `;
-                    
-                    document.getElementById('viewPostModal').style.display = 'flex';
-                }
-            } catch (error) {
-                console.error('Error loading post:', error);
-                alert('Error loading post details');
+                        <div class="no-data">No comments yet. Be the first to respond!</div>
+                    </div>
+                `;
             }
+            
+            document.getElementById('viewPostModal').style.display = 'flex';
+        } else {
+            alert('Error loading post details');
         }
+    } catch (error) {
+        console.error('Error loading post:', error);
+        alert('Error loading post details');
+    }
+}
 
         async function addComment(event) {
-            event.preventDefault();
+    event.preventDefault();
+    
+    const commentContent = document.getElementById('commentContent').value;
+    const isAnonymous = document.getElementById('commentAnonymous').checked;
+    
+    if (!commentContent.trim()) {
+        alert('Please write a comment before posting.');
+        return;
+    }
+    
+    // Show loading state on button
+    const submitBtn = document.querySelector('#addCommentForm button[type="submit"]');
+    const originalBtnText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Posting...';
+    submitBtn.disabled = true;
+    
+    try {
+        const response = await fetch(`${API_URL}/community/posts/${currentPostId}/comments`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getAuthToken()}`
+            },
+            body: JSON.stringify({
+                content: commentContent,
+                is_anonymous: isAnonymous
+            })
+        });
+        
+        if (response.ok) {
+            // Clear the form
+            document.getElementById('addCommentForm').reset();
+            document.getElementById('commentAnonymous').checked = true;
             
-            const commentData = {
-                content: document.getElementById('commentContent').value,
-                is_anonymous: document.getElementById('commentAnonymous').checked
-            };
+            // Refresh the post view to show new comment
+            await viewPost(currentPostId);
             
-            if (!commentData.content.trim()) {
-                alert('Please write a comment before posting.');
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_URL}/community/posts/${currentPostId}/comments`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${getAuthToken()}`
-                    },
-                    body: JSON.stringify(commentData)
-                });
-                
-                if (response.ok) {
-                    document.getElementById('addCommentForm').reset();
-                    document.getElementById('commentAnonymous').checked = true;
-                    viewPost(currentPostId); // Refresh the post view
-                } else {
-                    alert('Failed to add comment');
-                }
-            } catch (error) {
-                console.error('Error adding comment:', error);
-                alert('Network error');
-            }
+            // Show success message
+            showNotification('Comment posted successfully! 💬', 'success');
+        } else {
+            const error = await response.json();
+            console.error('Comment error:', error);
+            alert('Failed to add comment: ' + (error.detail || 'Please try again.'));
         }
+    } catch (error) {
+        console.error('Error adding comment:', error);
+        alert('Network error. Please check your connection and try again.');
+    } finally {
+        // Reset button
+        submitBtn.innerHTML = originalBtnText;
+        submitBtn.disabled = false;
+    }
+}
 
         async function likePost(postId) {
             try {

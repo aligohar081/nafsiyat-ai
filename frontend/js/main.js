@@ -1,5 +1,6 @@
-// API Configuration - Use global config or fallback to local
-const API_URL = window.API_URL || 'http://localhost:8000/api';
+// API Configuration - Use global config (no redeclaration!)
+// API_URL is already defined in config.js - DO NOT redeclare it here
+
 let authToken = null;
 
 // Modal functions

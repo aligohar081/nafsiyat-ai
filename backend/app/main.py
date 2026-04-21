@@ -29,7 +29,6 @@ app.add_middleware(
 def create_sample_psychologists(db: Session):
     """Create sample psychologists - safely without duplicates"""
     try:
-        # Check if psychologists already exist
         existing = db.query(models.Psychologist).first()
         if existing:
             print("✅ Psychologists already exist, skipping creation")
@@ -69,7 +68,6 @@ def create_sample_psychologists(db: Session):
         ]
         
         for doc in psychologists_data:
-            # Check if user already exists
             existing_user = db.query(models.User).filter((models.User.username == doc["username"]) | (models.User.email == doc["email"])).first()
             if existing_user:
                 print(f"⚠️ User {doc['username']} already exists, skipping")
@@ -534,7 +532,6 @@ def create_post(
     current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Create a new community post"""
     db_post = models.CommunityPost(
         user_id=current_user.id,
         title=post.title,
@@ -568,7 +565,6 @@ def get_posts(
     current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Get all community posts with optional category filter and liked status"""
     query = db.query(models.CommunityPost)
     
     if category and category != "":
@@ -580,19 +576,16 @@ def get_posts(
     
     result = []
     for post in posts:
-        # Get author name (anonymous if requested)
         if post.is_anonymous:
             author_name = "Anonymous"
         else:
             author = db.query(models.User).filter(models.User.id == post.user_id).first()
             author_name = author.username if author else "User"
         
-        # Get comment count
         comment_count = db.query(models.CommunityComment).filter(
             models.CommunityComment.post_id == post.id
         ).count()
         
-        # Check if current user liked this post
         user_liked = db.query(models.PostLike).filter(
             models.PostLike.post_id == post.id,
             models.PostLike.user_id == current_user.id
@@ -619,25 +612,21 @@ def get_post_detail(
     current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Get detailed information about a specific post including comments and liked status"""
     post = db.query(models.CommunityPost).filter(models.CommunityPost.id == post_id).first()
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
     
-    # Get author name
     if post.is_anonymous:
         author_name = "Anonymous"
     else:
         author = db.query(models.User).filter(models.User.id == post.user_id).first()
         author_name = author.username if author else "User"
     
-    # Check if current user liked this post
     user_liked = db.query(models.PostLike).filter(
         models.PostLike.post_id == post_id,
         models.PostLike.user_id == current_user.id
     ).first() is not None
     
-    # Get comments
     comments = db.query(models.CommunityComment).filter(
         models.CommunityComment.post_id == post_id
     ).order_by(models.CommunityComment.created_at).all()
@@ -650,7 +639,6 @@ def get_post_detail(
             comment_author_obj = db.query(models.User).filter(models.User.id == comment.user_id).first()
             comment_author = comment_author_obj.username if comment_author_obj else "User"
         
-        # Check if comment author is the current user
         is_author = comment.user_id == current_user.id
         
         comments_list.append({
@@ -682,17 +670,13 @@ def add_comment(
     current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Add a comment to a post"""
-    # Check if post exists
     post = db.query(models.CommunityPost).filter(models.CommunityPost.id == post_id).first()
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
     
-    # Validate content
     if not comment_data.content or len(comment_data.content.strip()) == 0:
         raise HTTPException(status_code=422, detail="Comment content cannot be empty")
     
-    # Create the comment
     comment = models.CommunityComment(
         post_id=post_id,
         user_id=current_user.id,
@@ -703,7 +687,6 @@ def add_comment(
     db.commit()
     db.refresh(comment)
     
-    # Get author name (anonymous if requested)
     author_name = "Anonymous" if comment.is_anonymous else current_user.username
     
     return {
@@ -720,26 +703,21 @@ def like_post(
     current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Like a post - prevents duplicate likes from same user"""
-    # Check if post exists
     post = db.query(models.CommunityPost).filter(models.CommunityPost.id == post_id).first()
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
     
-    # Check if user already liked this post
     existing_like = db.query(models.PostLike).filter(
         models.PostLike.post_id == post_id,
         models.PostLike.user_id == current_user.id
     ).first()
     
     if existing_like:
-        # User already liked - remove the like (unlike)
         db.delete(existing_like)
         post.likes -= 1
         db.commit()
         return {"likes": post.likes, "liked": False, "message": "Post unliked"}
     else:
-        # Add new like
         new_like = models.PostLike(
             post_id=post_id,
             user_id=current_user.id

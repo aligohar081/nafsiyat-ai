@@ -503,9 +503,11 @@
             <div id="contentDetail"></div>
         </div>
     </div>
+
     <script src="js/config.js"></script>
     <script>
-        
+        // API Configuration - Use global config
+        const API_URL = window.API_URL || 'http://localhost:8000/api';
         let currentLanguage = 'english';
 
         // Authentic Articles Data
@@ -713,7 +715,6 @@
             }
         ];
 
-        // Get auth token
         function getAuthToken() {
             const token = localStorage.getItem('token');
             if (!token) {
@@ -762,7 +763,6 @@
                             <h3>${escapeHtml(currentLanguage === 'english' ? content.title : content.title_urdu)}</h3>
                             <div class="content-meta">
                                 <span><i class="fas fa-tag"></i> ${content.category}</span>
-                                <span><i class="fas fa-eye"></i> ${content.views} views</span>
                             </div>
                         </div>
                     </div>
@@ -783,7 +783,6 @@
                         <h1>${escapeHtml(isEnglish ? content.title : content.title_urdu)}</h1>
                         <div class="content-detail-meta">
                             <span><i class="fas fa-tag"></i> ${content.category}</span>
-                            <span><i class="fas fa-eye"></i> ${content.views} views</span>
                         </div>
                     </div>
                     <div class="content-detail-body ${!isEnglish ? 'urdu-text' : ''}">

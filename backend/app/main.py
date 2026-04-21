@@ -547,7 +547,7 @@ def cancel_appointment(
     
     return {"message": "Appointment cancelled successfully"}
 
-# ============ Community Routes ============
+# ============ Community Routes (UPDATED) ============
 
 @app.post("/api/community/posts")
 def create_post(
@@ -586,9 +586,10 @@ def get_posts(
     category: Optional[str] = None,
     skip: int = 0,
     limit: int = 50,
+    current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Get all community posts with optional category filter"""
+    """Get all community posts with optional category filter and liked status"""
     query = db.query(models.CommunityPost)
     
     if category and category != "":
@@ -612,6 +613,12 @@ def get_posts(
             models.CommunityComment.post_id == post.id
         ).count()
         
+        # Check if current user liked this post
+        user_liked = db.query(models.PostLike).filter(
+            models.PostLike.post_id == post.id,
+            models.PostLike.user_id == current_user.id
+        ).first() is not None
+        
         result.append({
             "id": post.id,
             "title": post.title,
@@ -621,7 +628,8 @@ def get_posts(
             "created_at": post.created_at,
             "likes": post.likes,
             "comment_count": comment_count,
-            "is_anonymous": post.is_anonymous
+            "is_anonymous": post.is_anonymous,
+            "user_liked": user_liked
         })
     
     return result
@@ -629,9 +637,10 @@ def get_posts(
 @app.get("/api/community/posts/{post_id}")
 def get_post_detail(
     post_id: int,
+    current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Get detailed information about a specific post including comments"""
+    """Get detailed information about a specific post including comments and liked status"""
     post = db.query(models.CommunityPost).filter(models.CommunityPost.id == post_id).first()
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
@@ -642,6 +651,12 @@ def get_post_detail(
     else:
         author = db.query(models.User).filter(models.User.id == post.user_id).first()
         author_name = author.username if author else "User"
+    
+    # Check if current user liked this post
+    user_liked = db.query(models.PostLike).filter(
+        models.PostLike.post_id == post_id,
+        models.PostLike.user_id == current_user.id
+    ).first() is not None
     
     # Get comments
     comments = db.query(models.CommunityComment).filter(
@@ -656,12 +671,16 @@ def get_post_detail(
             comment_author_obj = db.query(models.User).filter(models.User.id == comment.user_id).first()
             comment_author = comment_author_obj.username if comment_author_obj else "User"
         
+        # Check if comment author is the current user
+        is_author = comment.user_id == current_user.id
+        
         comments_list.append({
             "id": comment.id,
             "content": comment.content,
             "author": comment_author,
             "is_anonymous": comment.is_anonymous,
-            "created_at": comment.created_at
+            "created_at": comment.created_at,
+            "is_author": is_author
         })
     
     return {
@@ -673,14 +692,14 @@ def get_post_detail(
         "created_at": post.created_at,
         "likes": post.likes,
         "is_anonymous": post.is_anonymous,
+        "user_liked": user_liked,
         "comments": comments_list
     }
-
 
 @app.post("/api/community/posts/{post_id}/comments")
 def add_comment(
     post_id: int,
-    comment_data: schemas.CommunityCommentCreate,  # Use the new schema
+    comment_data: schemas.CommunityCommentCreate,
     current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -722,15 +741,34 @@ def like_post(
     current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Like a post"""
+    """Like a post - prevents duplicate likes from same user"""
+    # Check if post exists
     post = db.query(models.CommunityPost).filter(models.CommunityPost.id == post_id).first()
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
     
-    post.likes += 1
-    db.commit()
+    # Check if user already liked this post
+    existing_like = db.query(models.PostLike).filter(
+        models.PostLike.post_id == post_id,
+        models.PostLike.user_id == current_user.id
+    ).first()
     
-    return {"likes": post.likes}
+    if existing_like:
+        # User already liked - remove the like (unlike)
+        db.delete(existing_like)
+        post.likes -= 1
+        db.commit()
+        return {"likes": post.likes, "liked": False, "message": "Post unliked"}
+    else:
+        # Add new like
+        new_like = models.PostLike(
+            post_id=post_id,
+            user_id=current_user.id
+        )
+        db.add(new_like)
+        post.likes += 1
+        db.commit()
+        return {"likes": post.likes, "liked": True, "message": "Post liked"}
 
 # ============ Wellness Library Routes ============
 

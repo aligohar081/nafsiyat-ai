@@ -757,8 +757,8 @@
                                         </div>
                                     </div>
                                     <div class="post-actions">
-                                        <button class="action-btn like-btn" onclick="likePost(${post.id})">
-                                            <i class="fas fa-heart"></i> Like
+                                        <button class="action-btn like-btn ${post.user_liked ? 'liked' : ''}" onclick="likePost(${post.id}, this)">
+                                            <i class="fas fa-heart"></i> ${post.user_liked ? 'Liked' : 'Like'}
                                         </button>
                                         <button class="action-btn comment-btn" onclick="viewPost(${post.id})">
                                             <i class="fas fa-comment"></i> Comment
@@ -958,7 +958,7 @@
             }
         }
 
-        async function likePost(postId) {
+        async function likePost(postId, buttonElement) {
             try {
                 const response = await fetch(`${window.API_URL}/community/posts/${postId}/like`, {
                     method: 'POST',
@@ -966,10 +966,27 @@
                 });
                 
                 if (response.ok) {
-                    loadPosts();
+                    const data = await response.json();
+                    
+                    // Update the like count in the stats
+                    const statItem = buttonElement.closest('.post-card').querySelector('.stat-item:first-child span');
+                    statItem.textContent = data.likes;
+                    
+                    // Update button appearance
+                    if (data.liked) {
+                        buttonElement.classList.add('liked');
+                        buttonElement.innerHTML = '<i class="fas fa-heart"></i> Liked';
+                    } else {
+                        buttonElement.classList.remove('liked');
+                        buttonElement.innerHTML = '<i class="fas fa-heart"></i> Like';
+                    }
+                    
+                    // Show notification
+                    showNotification(data.message, 'success');
                 }
             } catch (error) {
                 console.error('Error liking post:', error);
+                showNotification('Error processing like', 'error');
             }
         }
 

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, ForeignKey, JSON
+from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, ForeignKey, JSON, UniqueConstraint
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from .database import Base
@@ -19,6 +19,7 @@ class User(Base):
     # Relationships
     chat_sessions = relationship("ChatSession", back_populates="user", cascade="all, delete-orphan")
     appointments = relationship("Appointment", back_populates="user", cascade="all, delete-orphan")
+    post_likes = relationship("PostLike", back_populates="user", cascade="all, delete-orphan")
 
 class Psychologist(Base):
     __tablename__ = "psychologists"
@@ -91,6 +92,7 @@ class CommunityPost(Base):
     
     # Relationships
     comments = relationship("CommunityComment", back_populates="post", cascade="all, delete-orphan")
+    likes_relation = relationship("PostLike", back_populates="post", cascade="all, delete-orphan")
 
 class CommunityComment(Base):
     __tablename__ = "community_comments"
@@ -104,6 +106,21 @@ class CommunityComment(Base):
     
     # Relationships
     post = relationship("CommunityPost", back_populates="comments")
+
+class PostLike(Base):
+    __tablename__ = "post_likes"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    post_id = Column(Integer, ForeignKey("community_posts.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationships
+    post = relationship("CommunityPost", back_populates="likes_relation")
+    user = relationship("User", back_populates="post_likes")
+    
+    # Ensure one user can only like a post once
+    __table_args__ = (UniqueConstraint('post_id', 'user_id', name='unique_post_user_like'),)
 
 class WellnessContent(Base):
     __tablename__ = "wellness_content"

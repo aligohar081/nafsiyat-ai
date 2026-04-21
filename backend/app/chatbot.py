@@ -201,15 +201,17 @@ Your feelings are valid and you don't have to go through this alone.
 
 You matter, and there is help available. Would you like me to help you find local mental health resources?"""
     else:
-        # Get conversation history (last 10 messages for context)
+        # Get conversation history - limit to last 30 messages (15 user + 15 assistant)
+        # This provides good context without being too heavy
         previous_messages = db.query(models.ChatMessage).filter(
             models.ChatMessage.session_id == session.id
-        ).order_by(models.ChatMessage.timestamp).limit(10).all()
+        ).order_by(models.ChatMessage.timestamp).limit(40).all()
         
         history = []
         for msg in previous_messages:
             history.append({"role": msg.role, "content": msg.content})
         
+        print(f"📚 Using {len(history)} messages for conversation context (limit: 40 messages)")
         print(f"🤖 Calling Groq API...")
         response_text = await get_groq_response(history)
         print(f"💬 Response: {response_text[:100]}...")

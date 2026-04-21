@@ -16,8 +16,7 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Nafsiyat AI", description="Mental Wellness Platform", version="1.0.0")
 
-# CORS middleware
-# CORS middleware - Updated to allow your frontend domains
+# CORS middleware - FIXED to allow Vercel frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -28,7 +27,7 @@ app.add_middleware(
         "https://nafsiyat-ai-production.up.railway.app"
     ],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -102,7 +101,6 @@ def create_sample_psychologists(db: Session):
             )
             db.add(psychologist)
             
-            # Also add to PsychologistProfile
             profile = models.PsychologistProfile(
                 user_id=user.id,
                 specialization=doc["specialization"],
@@ -259,20 +257,17 @@ async def register_psychologist(
 ):
     """Register a new psychologist with profile picture"""
     
-    # Check if user exists
     existing_user = db.query(models.User).filter(
         (models.User.email == email) | (models.User.username == username)
     ).first()
     if existing_user:
         raise HTTPException(status_code=400, detail="User already exists")
     
-    # Handle profile picture upload
     profile_picture_url = ""
     if profile_picture:
         contents = await profile_picture.read()
         profile_picture_url = f"data:{profile_picture.content_type};base64,{base64.b64encode(contents).decode()}"
     
-    # Create user
     hashed_password = auth.get_password_hash(password)
     db_user = models.User(
         email=email,
@@ -286,7 +281,6 @@ async def register_psychologist(
     db.add(db_user)
     db.flush()
     
-    # Create psychologist profile
     psychologist_profile = models.PsychologistProfile(
         user_id=db_user.id,
         specialization=specialization,
@@ -299,7 +293,6 @@ async def register_psychologist(
     )
     db.add(psychologist_profile)
     
-    # Also create entry in old Psychologist table for backward compatibility
     old_psychologist = models.Psychologist(
         user_id=db_user.id,
         license_number=license_number,
@@ -339,7 +332,6 @@ async def send_message(
     current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Send a message to the AI chatbot and get a response"""
     response = await chatbot.process_chat_message(db, current_user.id, message.content)
     return response
 
@@ -350,7 +342,6 @@ async def send_message_with_session(
     current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Send a message with a specific session ID"""
     response = await chatbot.process_chat_message(db, current_user.id, message.content, session_id)
     return response
 
@@ -359,12 +350,10 @@ async def create_new_session(
     current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Create a brand new chat session"""
     new_session = models.ChatSession(user_id=current_user.id)
     db.add(new_session)
     db.commit()
     db.refresh(new_session)
-    
     return {"session_id": new_session.id, "message": "New session created"}
 
 @app.get("/api/chat/history")
@@ -372,7 +361,6 @@ def get_chat_history(
     current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Get user's chat history with session previews"""
     sessions = db.query(models.ChatSession).filter(
         models.ChatSession.user_id == current_user.id
     ).order_by(models.ChatSession.started_at.desc()).all()
@@ -423,7 +411,6 @@ async def get_session_messages(
     current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Get messages for a specific session"""
     session = db.query(models.ChatSession).filter(
         models.ChatSession.id == session_id,
         models.ChatSession.user_id == current_user.id
@@ -452,7 +439,6 @@ async def get_current_session(
     current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Get the most recent session for the user"""
     session = db.query(models.ChatSession).filter(
         models.ChatSession.user_id == current_user.id
     ).order_by(models.ChatSession.started_at.desc()).first()
@@ -463,7 +449,6 @@ async def get_current_session(
 
 @app.get("/api/chat/test")
 async def test_chatbot():
-    """Test endpoint to verify chatbot is working"""
     from .chatbot import detect_emotion, get_cbt_response
     
     test_message = "I'm feeling anxious today"
@@ -486,7 +471,6 @@ def get_psychologist_profiles(
     specialization: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
-    """Get all psychologist profiles for users to view"""
     query = db.query(models.User).filter(models.User.role == "psychologist")
     
     if specialization:
@@ -519,7 +503,6 @@ def get_psychologist_profile_detail(
     psychologist_id: int,
     db: Session = Depends(get_db)
 ):
-    """Get detailed profile of a specific psychologist"""
     psych = db.query(models.User).filter(
         models.User.id == psychologist_id,
         models.User.role == "psychologist"
@@ -695,7 +678,6 @@ def send_consultation_message(
     current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Send a message in a consultation chat"""
     appointment = db.query(models.Appointment).filter(
         models.Appointment.id == message_data.appointment_id
     ).first()
@@ -737,7 +719,6 @@ def get_consultation_messages(
     current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Get all messages for a consultation"""
     appointment = db.query(models.Appointment).filter(
         models.Appointment.id == appointment_id
     ).first()
@@ -765,7 +746,6 @@ def get_consultation_messages(
             "sender_name": sender.full_name or sender.username if sender else "Unknown"
         })
     
-    # Mark messages as read
     for msg in messages:
         if msg.receiver_id == current_user.id and not msg.is_read:
             msg.is_read = True
@@ -778,7 +758,6 @@ def get_my_consultations(
     current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Get all consultations for the current user (as patient or psychologist)"""
     if current_user.role == "psychologist":
         psychologist = db.query(models.Psychologist).filter(
             models.Psychologist.user_id == current_user.id
@@ -804,7 +783,6 @@ def get_my_consultations(
             models.User.id == apt.user_id
         ).first()
         
-        # Get unread count
         unread_count = db.query(models.ConsultationMessage).filter(
             models.ConsultationMessage.appointment_id == apt.id,
             models.ConsultationMessage.receiver_id == current_user.id,

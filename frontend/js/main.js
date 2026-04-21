@@ -50,7 +50,8 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
             localStorage.setItem('username', username);
             window.location.href = 'dashboard.html';
         } else {
-            alert('Login failed. Please check your credentials.');
+            const error = await response.json();
+            alert('Login failed: ' + (error.detail || 'Invalid credentials'));
         }
     } catch (error) {
         console.error('Login error:', error);
@@ -69,7 +70,6 @@ document.getElementById('signupForm')?.addEventListener('submit', async (e) => {
     
     // If psychologist, redirect to psychologist registration page
     if (role === 'psychologist') {
-        // Store registration data in session storage
         sessionStorage.setItem('psychologistData', JSON.stringify({
             full_name: fullName,
             username: username,
@@ -85,7 +85,13 @@ document.getElementById('signupForm')?.addEventListener('submit', async (e) => {
         const response = await fetch(`${API_URL}/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ full_name: fullName, username, email, password, role: 'user' })
+            body: JSON.stringify({ 
+                full_name: fullName, 
+                username: username, 
+                email: email, 
+                password: password, 
+                role: 'user' 
+            })
         });
         
         if (response.ok) {

@@ -549,6 +549,133 @@ def cancel_appointment(
 
 # ============ Community Routes ============
 
+@app.post("/api/community/posts")
+def create_post(
+    post: schemas.CommunityPostCreate,
+    current_user: models.User = Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Create a new community post"""
+    db_post = models.CommunityPost(
+        user_id=current_user.id,
+        title=post.title,
+        content=post.content,
+        category=post.category,
+        is_anonymous=post.is_anonymous
+    )
+    db.add(db_post)
+    db.commit()
+    db.refresh(db_post)
+    
+    author_name = "Anonymous" if post.is_anonymous else current_user.username
+    
+    return {
+        "id": db_post.id,
+        "title": db_post.title,
+        "content": db_post.content,
+        "author": author_name,
+        "category": db_post.category,
+        "created_at": db_post.created_at,
+        "likes": db_post.likes,
+        "comment_count": 0,
+        "is_anonymous": db_post.is_anonymous
+    }
+
+@app.get("/api/community/posts")
+def get_posts(
+    category: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 50,
+    db: Session = Depends(get_db)
+):
+    """Get all community posts with optional category filter"""
+    query = db.query(models.CommunityPost)
+    
+    if category and category != "":
+        query = query.filter(models.CommunityPost.category == category)
+    
+    posts = query.order_by(
+        models.CommunityPost.created_at.desc()
+    ).offset(skip).limit(limit).all()
+    
+    result = []
+    for post in posts:
+        # Get author name (anonymous if requested)
+        if post.is_anonymous:
+            author_name = "Anonymous"
+        else:
+            author = db.query(models.User).filter(models.User.id == post.user_id).first()
+            author_name = author.username if author else "User"
+        
+        # Get comment count
+        comment_count = db.query(models.CommunityComment).filter(
+            models.CommunityComment.post_id == post.id
+        ).count()
+        
+        result.append({
+            "id": post.id,
+            "title": post.title,
+            "content": post.content[:200] + "..." if len(post.content) > 200 else post.content,
+            "author": author_name,
+            "category": post.category,
+            "created_at": post.created_at,
+            "likes": post.likes,
+            "comment_count": comment_count,
+            "is_anonymous": post.is_anonymous
+        })
+    
+    return result
+
+@app.get("/api/community/posts/{post_id}")
+def get_post_detail(
+    post_id: int,
+    db: Session = Depends(get_db)
+):
+    """Get detailed information about a specific post including comments"""
+    post = db.query(models.CommunityPost).filter(models.CommunityPost.id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    # Get author name
+    if post.is_anonymous:
+        author_name = "Anonymous"
+    else:
+        author = db.query(models.User).filter(models.User.id == post.user_id).first()
+        author_name = author.username if author else "User"
+    
+    # Get comments
+    comments = db.query(models.CommunityComment).filter(
+        models.CommunityComment.post_id == post_id
+    ).order_by(models.CommunityComment.created_at).all()
+    
+    comments_list = []
+    for comment in comments:
+        if comment.is_anonymous:
+            comment_author = "Anonymous"
+        else:
+            comment_author_obj = db.query(models.User).filter(models.User.id == comment.user_id).first()
+            comment_author = comment_author_obj.username if comment_author_obj else "User"
+        
+        comments_list.append({
+            "id": comment.id,
+            "content": comment.content,
+            "author": comment_author,
+            "is_anonymous": comment.is_anonymous,
+            "created_at": comment.created_at
+        })
+    
+    return {
+        "id": post.id,
+        "title": post.title,
+        "content": post.content,
+        "author": author_name,
+        "category": post.category,
+        "created_at": post.created_at,
+        "likes": post.likes,
+        "is_anonymous": post.is_anonymous,
+        "comments": comments_list
+    }
+
 @app.post("/api/community/posts/{post_id}/comments")
 def add_comment(
     post_id: int,
@@ -583,6 +710,22 @@ def add_comment(
         "is_anonymous": comment.is_anonymous,
         "created_at": comment.created_at
     }
+
+@app.post("/api/community/posts/{post_id}/like")
+def like_post(
+    post_id: int,
+    current_user: models.User = Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Like a post"""
+    post = db.query(models.CommunityPost).filter(models.CommunityPost.id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    post.likes += 1
+    db.commit()
+    
+    return {"likes": post.likes}
 
 # ============ Wellness Library Routes ============
 

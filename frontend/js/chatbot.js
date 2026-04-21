@@ -1,3 +1,4 @@
+
 let currentSessionId = null;
 let allSessions = [];
 
@@ -89,103 +90,15 @@ function updateHistorySidebar() {
     container.innerHTML = allSessions.map(session => `
         <div class="history-item ${currentSessionId === session.id ? 'active' : ''}" onclick="loadSession(${session.id})">
             <div class="history-item-header">
-                <div class="history-title" id="session-title-${session.id}">${escapeHtml(session.title || 'Chat Session')}</div>
-                <div class="history-item-actions">
-                    <button class="summary-session-btn" onclick="event.stopPropagation(); getSessionSummary(${session.id})" title="Get Summary">
-                        <i class="fas fa-file-alt"></i>
-                    </button>
-                    <button class="edit-session-btn" onclick="event.stopPropagation(); showEditSessionModal(${session.id}, '${escapeHtml(session.title || 'Chat Session')}')" title="Edit Name">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="delete-history-btn" onclick="event.stopPropagation(); deleteSession(${session.id})" title="Delete">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
+                <div class="history-title">${escapeHtml(session.title || 'Chat Session')}</div>
+                <button class="delete-history-btn" onclick="event.stopPropagation(); deleteSession(${session.id})">
+                    <i class="fas fa-trash"></i>
+                </button>
             </div>
             <div class="history-preview">${escapeHtml(session.preview || 'No messages')}</div>
             <div class="history-date">${formatDate(session.started_at)}</div>
         </div>
     `).join('');
-}
-
-// Show edit session modal
-let editSessionId = null;
-function showEditSessionModal(sessionId, currentTitle) {
-    editSessionId = sessionId;
-    document.getElementById('editSessionName').value = currentTitle;
-    document.getElementById('editSessionModal').style.display = 'block';
-    document.getElementById('editModalOverlay').style.display = 'block';
-}
-
-function closeEditModal() {
-    document.getElementById('editSessionModal').style.display = 'none';
-    document.getElementById('editModalOverlay').style.display = 'none';
-    editSessionId = null;
-}
-
-async function saveSessionName() {
-    const newName = document.getElementById('editSessionName').value.trim();
-    if (!newName) {
-        showNotification('Please enter a session name', 'error');
-        return;
-    }
-    
-    try {
-        const response = await fetch(`${API_URL}/chat/session/${editSessionId}/rename`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${getAuthToken()}`
-            },
-            body: JSON.stringify({ title: newName })
-        });
-        
-        if (response.ok) {
-            showNotification('Session name updated!', 'success');
-            closeEditModal();
-            await loadChatHistory();
-        } else {
-            showNotification('Failed to update session name', 'error');
-        }
-    } catch (error) {
-        console.error('Error renaming session:', error);
-        showNotification('Network error', 'error');
-    }
-}
-
-// Get session summary
-async function getSessionSummary(sessionId) {
-    try {
-        const response = await fetch(`${API_URL}/chat/session/${sessionId}/summary`, {
-            headers: { 'Authorization': `Bearer ${getAuthToken()}` }
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            document.getElementById('summaryContent').innerHTML = data.summary;
-            document.getElementById('summaryModal').style.display = 'block';
-            document.getElementById('summaryModalOverlay').style.display = 'block';
-        } else {
-            showNotification('Failed to get session summary', 'error');
-        }
-    } catch (error) {
-        console.error('Error getting summary:', error);
-        showNotification('Network error', 'error');
-    }
-}
-
-// Show current session summary
-async function showCurrentSessionSummary() {
-    if (!currentSessionId) {
-        showNotification('No active session to summarize', 'error');
-        return;
-    }
-    await getSessionSummary(currentSessionId);
-}
-
-function closeSummaryModal() {
-    document.getElementById('summaryModal').style.display = 'none';
-    document.getElementById('summaryModalOverlay').style.display = 'none';
 }
 
 // Load a specific session
@@ -456,6 +369,11 @@ function showTypingIndicator() {
 function removeTypingIndicator() {
     const indicator = document.getElementById('typingIndicator');
     if (indicator) indicator.remove();
+}
+
+function sendQuickMessage(message) {
+    document.getElementById('messageInput').value = message;
+    sendMessage();
 }
 
 function handleKeyPress(event) {

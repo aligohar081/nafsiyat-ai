@@ -1,4 +1,5 @@
-
+// API Configuration - Use global config or fallback to local
+const API_URL = window.API_URL || 'http://localhost:8000/api';
 let authToken = null;
 
 // Modal functions
@@ -56,19 +57,34 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
     }
 });
 
-// Handle signup
+// Handle signup - Updated for role selection
 document.getElementById('signupForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const fullName = document.getElementById('signupFullName').value;
     const username = document.getElementById('signupUsername').value;
     const email = document.getElementById('signupEmail').value;
     const password = document.getElementById('signupPassword').value;
+    const role = document.getElementById('signupRole')?.value || 'user';
     
+    // If psychologist, redirect to psychologist registration page
+    if (role === 'psychologist') {
+        // Store registration data in session storage
+        sessionStorage.setItem('psychologistData', JSON.stringify({
+            full_name: fullName,
+            username: username,
+            email: email,
+            password: password
+        }));
+        window.location.href = 'psychologist-register.html';
+        return;
+    }
+    
+    // Regular user registration
     try {
         const response = await fetch(`${API_URL}/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ full_name: fullName, username, email, password })
+            body: JSON.stringify({ full_name: fullName, username, email, password, role: 'user' })
         });
         
         if (response.ok) {

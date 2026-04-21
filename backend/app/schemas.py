@@ -9,6 +9,7 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str = Field(..., min_length=6)
+    role: str = "user"
 
 class UserLogin(BaseModel):
     username: str
@@ -16,8 +17,56 @@ class UserLogin(BaseModel):
 
 class UserResponse(UserBase):
     id: int
-    is_psychologist: bool
+    role: str
+    is_verified: bool
     created_at: datetime
+    profile_picture: Optional[str] = None
+    
+    class Config:
+        from_attributes = True
+
+# Psychologist Registration Schema
+class PsychologistRegister(UserCreate):
+    role: str = "psychologist"
+    specialization: str
+    years_of_experience: int
+    education: str
+    consultation_fee: int
+    license_number: str
+    bio: Optional[str] = None
+    profile_picture: Optional[str] = None
+
+class PsychologistProfileResponse(BaseModel):
+    id: int
+    user_id: int
+    specialization: str
+    years_of_experience: int
+    education: str
+    consultation_fee: int
+    bio: Optional[str]
+    is_available: bool
+    license_number: str
+    created_at: datetime
+    full_name: str
+    email: str
+    profile_picture: Optional[str]
+    
+    class Config:
+        from_attributes = True
+
+# Consultation Message Schemas
+class ConsultationMessageCreate(BaseModel):
+    appointment_id: int
+    message: str
+
+class ConsultationMessageResponse(BaseModel):
+    id: int
+    sender_id: int
+    receiver_id: int
+    message: str
+    is_read: bool
+    timestamp: datetime
+    sender_name: str
     
     class Config:
         from_attributes = True
@@ -46,7 +95,6 @@ class ChatSessionResponse(BaseModel):
     messages: List[ChatMessageResponse]
     sessions: List
 
-# Appointment Schemas
 class AppointmentCreate(BaseModel):
     psychologist_id: int
     scheduled_time: datetime
@@ -78,7 +126,7 @@ class CommunityPostResponse(BaseModel):
     is_anonymous: bool = True
 
 class CommunityCommentCreate(BaseModel):
-    content: str = Field(..., max_length=1000, min_length=1)
+    content: str = Field(..., max_length=1000)
     is_anonymous: bool = True
 
 class CommunityCommentResponse(BaseModel):
@@ -87,7 +135,6 @@ class CommunityCommentResponse(BaseModel):
     author: str
     created_at: datetime
 
-# Wellness Content Schemas
 class WellnessContentResponse(BaseModel):
     id: int
     title: str
@@ -97,11 +144,6 @@ class WellnessContentResponse(BaseModel):
     views: int
     image_url: Optional[str] = None
 
-class WellnessContentDetailResponse(WellnessContentResponse):
-    tags: Optional[List[str]] = None
-    created_at: Optional[datetime] = None
-
-# Dashboard Stats
 class DashboardStats(BaseModel):
     chat_sessions: int
     total_messages: int

@@ -11,19 +11,41 @@ class User(Base):
     username = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     full_name = Column(String, default="")
-    is_psychologist = Column(Boolean, default=False)
+    role = Column(String, default="user")  # 'user' or 'psychologist'
     is_verified = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     last_login = Column(DateTime(timezone=True), nullable=True)
+    profile_picture = Column(String, default="")  # URL to profile picture
     
     # Relationships
     chat_sessions = relationship("ChatSession", back_populates="user", cascade="all, delete-orphan")
     appointments = relationship("Appointment", back_populates="user", cascade="all, delete-orphan")
     post_likes = relationship("PostLike", back_populates="user", cascade="all, delete-orphan")
+    psychologist_profile = relationship("PsychologistProfile", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    sent_messages = relationship("ConsultationMessage", foreign_keys="ConsultationMessage.sender_id", back_populates="sender")
+    received_messages = relationship("ConsultationMessage", foreign_keys="ConsultationMessage.receiver_id", back_populates="receiver")
+
+class PsychologistProfile(Base):
+    __tablename__ = "psychologist_profiles"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True)
+    specialization = Column(String, nullable=False)
+    years_of_experience = Column(Integer, nullable=False)
+    education = Column(String, nullable=False)  # College/University, MBBS or relevant degree
+    consultation_fee = Column(Integer, nullable=False)  # PKR per hour
+    bio = Column(Text, default="")
+    is_available = Column(Boolean, default=True)
+    license_number = Column(String, unique=True, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationships
+    user = relationship("User", back_populates="psychologist_profile")
+    appointments = relationship("Appointment", back_populates="psychologist", cascade="all, delete-orphan")
 
 class Psychologist(Base):
     __tablename__ = "psychologists"
-    
+    # Keep for backward compatibility
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     license_number = Column(String, unique=True, nullable=False)
@@ -41,6 +63,7 @@ class ChatSession(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
+    title = Column(String, default="")
     started_at = Column(DateTime(timezone=True), server_default=func.now())
     ended_at = Column(DateTime(timezone=True), nullable=True)
     
@@ -77,6 +100,22 @@ class Appointment(Base):
     # Relationships
     user = relationship("User", back_populates="appointments")
     psychologist = relationship("Psychologist", back_populates="appointments")
+
+class ConsultationMessage(Base):
+    __tablename__ = "consultation_messages"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    appointment_id = Column(Integer, ForeignKey("appointments.id"))
+    sender_id = Column(Integer, ForeignKey("users.id"))
+    receiver_id = Column(Integer, ForeignKey("users.id"))
+    message = Column(Text, nullable=False)
+    is_read = Column(Boolean, default=False)
+    timestamp = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationships
+    appointment = relationship("Appointment")
+    sender = relationship("User", foreign_keys=[sender_id], back_populates="sent_messages")
+    receiver = relationship("User", foreign_keys=[receiver_id], back_populates="received_messages")
 
 class CommunityPost(Base):
     __tablename__ = "community_posts"
@@ -119,7 +158,6 @@ class PostLike(Base):
     post = relationship("CommunityPost", back_populates="likes_relation")
     user = relationship("User", back_populates="post_likes")
     
-    # Ensure one user can only like a post once
     __table_args__ = (UniqueConstraint('post_id', 'user_id', name='unique_post_user_like'),)
 
 class WellnessContent(Base):

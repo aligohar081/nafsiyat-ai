@@ -649,7 +649,7 @@
             border-radius: var(--border-radius);
             padding: 2rem;
             width: 90%;
-            max-width: 450px;
+            max-width: 420px;
             position: relative;
             border-top: 4px solid #FFD700;
             animation: modalFadeIn 0.3s ease;
@@ -692,7 +692,7 @@
             font-size: 0.9rem;
         }
 
-        .form-group input, .form-group select {
+        .form-group input {
             width: 100%;
             padding: 0.75rem;
             border: 1px solid #e8e8ec;
@@ -701,7 +701,7 @@
             transition: all 0.3s;
         }
 
-        .form-group input:focus, .form-group select:focus {
+        .form-group input:focus {
             outline: none;
             border-color: #FFD700;
             box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
@@ -986,7 +986,7 @@
         </div>
     </div>
 
-    <!-- Signup Modal with Role Selection -->
+    <!-- Signup Modal - Without Role Selection -->
     <div id="signupModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeSignupModal()">&times;</span>
@@ -1007,13 +1007,6 @@
                 <div class="form-group">
                     <label>Password</label>
                     <input type="password" id="signupPassword" required placeholder="Create a password">
-                </div>
-                <div class="form-group">
-                    <label>I want to sign up as:</label>
-                    <select id="signupRole" required style="width: 100%; padding: 0.75rem; border: 1px solid #e8e8ec; border-radius: 8px;">
-                        <option value="user">🧑 User - Seek mental wellness support</option>
-                        <option value="psychologist">👨‍⚕️ Psychologist - Offer professional services</option>
-                    </select>
                 </div>
                 <button type="submit" class="btn-primary btn-block">Sign Up</button>
             </form>

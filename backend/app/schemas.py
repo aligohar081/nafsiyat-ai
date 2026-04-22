@@ -9,7 +9,6 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str = Field(..., min_length=6)
-    role: str = "user"
 
 class UserLogin(BaseModel):
     username: str
@@ -17,56 +16,8 @@ class UserLogin(BaseModel):
 
 class UserResponse(UserBase):
     id: int
-    role: str
-    is_verified: bool
+    is_psychologist: bool
     created_at: datetime
-    profile_picture: Optional[str] = None
-    
-    class Config:
-        from_attributes = True
-
-# Psychologist Registration Schema
-class PsychologistRegister(UserCreate):
-    role: str = "psychologist"
-    specialization: str
-    years_of_experience: int
-    education: str
-    consultation_fee: int
-    license_number: str
-    bio: Optional[str] = None
-    profile_picture: Optional[str] = None
-
-class PsychologistProfileResponse(BaseModel):
-    id: int
-    user_id: int
-    specialization: str
-    years_of_experience: int
-    education: str
-    consultation_fee: int
-    bio: Optional[str]
-    is_available: bool
-    license_number: str
-    created_at: datetime
-    full_name: str
-    email: str
-    profile_picture: Optional[str]
-    
-    class Config:
-        from_attributes = True
-
-# Consultation Message Schemas
-class ConsultationMessageCreate(BaseModel):
-    appointment_id: int
-    message: str
-
-class ConsultationMessageResponse(BaseModel):
-    id: int
-    sender_id: int
-    receiver_id: int
-    message: str
-    is_read: bool
-    timestamp: datetime
-    sender_name: str
     
     class Config:
         from_attributes = True

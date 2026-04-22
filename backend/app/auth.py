@@ -80,22 +80,6 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
         raise credentials_exception
     return user
 
-async def get_current_psychologist(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if current_user.role != "psychologist":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only psychologists can access this resource"
-        )
-    return current_user
-
-async def get_current_user_only(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if current_user.role != "user":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only regular users can access this resource"
-        )
-    return current_user
-
 async def get_current_user_optional(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     if not token:
         return None

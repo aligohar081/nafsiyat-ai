@@ -1,6 +1,5 @@
-// API Configuration - Use global config (no redeclaration!)
-// API_URL is already defined in config.js - DO NOT redeclare it here
-
+// API Configuration - Use global config or fallback to local
+const API_URL = window.API_URL || 'http://localhost:8000/api';
 let authToken = null;
 
 // Modal functions
@@ -50,8 +49,7 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
             localStorage.setItem('username', username);
             window.location.href = 'dashboard.html';
         } else {
-            const error = await response.json();
-            alert('Login failed: ' + (error.detail || 'Invalid credentials'));
+            alert('Login failed. Please check your credentials.');
         }
     } catch (error) {
         console.error('Login error:', error);
@@ -59,39 +57,19 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
     }
 });
 
-// Handle signup - Updated for role selection
+// Handle signup
 document.getElementById('signupForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const fullName = document.getElementById('signupFullName').value;
     const username = document.getElementById('signupUsername').value;
     const email = document.getElementById('signupEmail').value;
     const password = document.getElementById('signupPassword').value;
-    const role = document.getElementById('signupRole')?.value || 'user';
     
-    // If psychologist, redirect to psychologist registration page
-    if (role === 'psychologist') {
-        sessionStorage.setItem('psychologistData', JSON.stringify({
-            full_name: fullName,
-            username: username,
-            email: email,
-            password: password
-        }));
-        window.location.href = 'psychologist-register.html';
-        return;
-    }
-    
-    // Regular user registration
     try {
         const response = await fetch(`${API_URL}/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                full_name: fullName, 
-                username: username, 
-                email: email, 
-                password: password, 
-                role: 'user' 
-            })
+            body: JSON.stringify({ full_name: fullName, username, email, password })
         });
         
         if (response.ok) {

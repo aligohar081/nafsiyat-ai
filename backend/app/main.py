@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Query, UploadFile, File, Form
+from fastapi import FastAPI, Depends, HTTPException, status, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 from typing import List, Optional
 import os
 import uuid
-import base64
 
 from .database import engine, get_db, Base
 from . import models, schemas, auth, chatbot, teleconsultation, community
@@ -16,7 +15,7 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Nafsiyat AI", description="Mental Wellness Platform", version="1.0.0")
 
-# CORS middleware - FIXED to allow Vercel frontend
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -27,7 +26,7 @@ app.add_middleware(
         "https://nafsiyat-ai-production.up.railway.app"
     ],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
@@ -85,7 +84,7 @@ def create_sample_psychologists(db: Session):
                 username=doc["username"],
                 hashed_password=auth.get_password_hash(doc["password"]),
                 full_name=doc["full_name"],
-                role="psychologist",
+                is_psychologist=True,
                 is_verified=True
             )
             db.add(user)
@@ -100,18 +99,6 @@ def create_sample_psychologists(db: Session):
                 is_available=True
             )
             db.add(psychologist)
-            
-            profile = models.PsychologistProfile(
-                user_id=user.id,
-                specialization=doc["specialization"],
-                years_of_experience=8,
-                education="PhD in Clinical Psychology",
-                consultation_fee=doc["fee"],
-                license_number=doc["license"],
-                bio=doc["bio"],
-                is_available=True
-            )
-            db.add(profile)
         
         db.commit()
         print("✅ Sample psychologists created!")
@@ -232,81 +219,12 @@ def register(user_data: schemas.UserCreate, db: Session = Depends(get_db)):
         email=user_data.email,
         username=user_data.username,
         full_name=user_data.full_name,
-        hashed_password=hashed_password,
-        role=user_data.role if hasattr(user_data, 'role') else "user"
+        hashed_password=hashed_password
     )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
     return db_user
-
-@app.post("/api/auth/register-psychologist")
-async def register_psychologist(
-    full_name: str = Form(...),
-    username: str = Form(...),
-    email: str = Form(...),
-    password: str = Form(...),
-    specialization: str = Form(...),
-    years_of_experience: int = Form(...),
-    education: str = Form(...),
-    consultation_fee: int = Form(...),
-    license_number: str = Form(...),
-    bio: str = Form(None),
-    profile_picture: UploadFile = File(None),
-    db: Session = Depends(get_db)
-):
-    """Register a new psychologist with profile picture"""
-    
-    existing_user = db.query(models.User).filter(
-        (models.User.email == email) | (models.User.username == username)
-    ).first()
-    if existing_user:
-        raise HTTPException(status_code=400, detail="User already exists")
-    
-    profile_picture_url = ""
-    if profile_picture:
-        contents = await profile_picture.read()
-        profile_picture_url = f"data:{profile_picture.content_type};base64,{base64.b64encode(contents).decode()}"
-    
-    hashed_password = auth.get_password_hash(password)
-    db_user = models.User(
-        email=email,
-        username=username,
-        full_name=full_name,
-        hashed_password=hashed_password,
-        role="psychologist",
-        profile_picture=profile_picture_url,
-        is_verified=True
-    )
-    db.add(db_user)
-    db.flush()
-    
-    psychologist_profile = models.PsychologistProfile(
-        user_id=db_user.id,
-        specialization=specialization,
-        years_of_experience=years_of_experience,
-        education=education,
-        consultation_fee=consultation_fee,
-        license_number=license_number,
-        bio=bio or "",
-        is_available=True
-    )
-    db.add(psychologist_profile)
-    
-    old_psychologist = models.Psychologist(
-        user_id=db_user.id,
-        license_number=license_number,
-        specialization=specialization,
-        bio=bio or "",
-        consultation_fee=consultation_fee,
-        is_available=True
-    )
-    db.add(old_psychologist)
-    
-    db.commit()
-    db.refresh(db_user)
-    
-    return {"message": "Psychologist registered successfully", "user_id": db_user.id}
 
 @app.post("/api/auth/login", response_model=schemas.Token)
 def login(user_data: schemas.UserLogin, db: Session = Depends(get_db)):
@@ -317,7 +235,7 @@ def login(user_data: schemas.UserLogin, db: Session = Depends(get_db)):
     user.last_login = datetime.now()
     db.commit()
     
-    access_token = auth.create_access_token(data={"sub": user.username, "role": user.role})
+    access_token = auth.create_access_token(data={"sub": user.username})
     return {"access_token": access_token, "token_type": "bearer"}
 
 @app.get("/api/auth/me", response_model=schemas.UserResponse)
@@ -464,72 +382,6 @@ async def test_chatbot():
         "message": "Groq API is configured and ready!" if groq_configured else "Using local CBT responses"
     }
 
-# ============ Psychologist Profile Routes ============
-
-@app.get("/api/psychologists/profiles")
-def get_psychologist_profiles(
-    specialization: Optional[str] = None,
-    db: Session = Depends(get_db)
-):
-    query = db.query(models.User).filter(models.User.role == "psychologist")
-    
-    if specialization:
-        query = query.join(models.PsychologistProfile).filter(
-            models.PsychologistProfile.specialization.ilike(f"%{specialization}%")
-        )
-    
-    psychologists = query.all()
-    result = []
-    for psych in psychologists:
-        profile = psych.psychologist_profile
-        if profile:
-            result.append({
-                "id": psych.id,
-                "full_name": psych.full_name,
-                "specialization": profile.specialization,
-                "years_of_experience": profile.years_of_experience,
-                "education": profile.education,
-                "consultation_fee": profile.consultation_fee,
-                "bio": profile.bio,
-                "is_available": profile.is_available,
-                "profile_picture": psych.profile_picture,
-                "license_number": profile.license_number
-            })
-    
-    return result
-
-@app.get("/api/psychologists/profiles/{psychologist_id}")
-def get_psychologist_profile_detail(
-    psychologist_id: int,
-    db: Session = Depends(get_db)
-):
-    psych = db.query(models.User).filter(
-        models.User.id == psychologist_id,
-        models.User.role == "psychologist"
-    ).first()
-    
-    if not psych:
-        raise HTTPException(status_code=404, detail="Psychologist not found")
-    
-    profile = psych.psychologist_profile
-    if not profile:
-        raise HTTPException(status_code=404, detail="Profile not found")
-    
-    return {
-        "id": psych.id,
-        "full_name": psych.full_name,
-        "email": psych.email,
-        "specialization": profile.specialization,
-        "years_of_experience": profile.years_of_experience,
-        "education": profile.education,
-        "consultation_fee": profile.consultation_fee,
-        "bio": profile.bio,
-        "is_available": profile.is_available,
-        "profile_picture": psych.profile_picture,
-        "license_number": profile.license_number,
-        "created_at": profile.created_at
-    }
-
 # ============ Teleconsultation Routes ============
 
 @app.get("/api/psychologists")
@@ -669,138 +521,6 @@ def cancel_appointment(
     db.commit()
     
     return {"message": "Appointment cancelled successfully"}
-
-# ============ Consultation Chat Routes ============
-
-@app.post("/api/consultation/messages")
-def send_consultation_message(
-    message_data: schemas.ConsultationMessageCreate,
-    current_user: models.User = Depends(auth.get_current_user),
-    db: Session = Depends(get_db)
-):
-    appointment = db.query(models.Appointment).filter(
-        models.Appointment.id == message_data.appointment_id
-    ).first()
-    
-    if not appointment:
-        raise HTTPException(status_code=404, detail="Appointment not found")
-    
-    if current_user.id != appointment.user_id and current_user.id != appointment.psychologist.user_id:
-        raise HTTPException(status_code=403, detail="Not authorized")
-    
-    if current_user.id == appointment.user_id:
-        receiver_id = appointment.psychologist.user_id
-    else:
-        receiver_id = appointment.user_id
-    
-    message = models.ConsultationMessage(
-        appointment_id=message_data.appointment_id,
-        sender_id=current_user.id,
-        receiver_id=receiver_id,
-        message=message_data.message
-    )
-    db.add(message)
-    db.commit()
-    db.refresh(message)
-    
-    return {
-        "id": message.id,
-        "sender_id": message.sender_id,
-        "receiver_id": message.receiver_id,
-        "message": message.message,
-        "is_read": message.is_read,
-        "timestamp": message.timestamp,
-        "sender_name": current_user.full_name or current_user.username
-    }
-
-@app.get("/api/consultation/messages/{appointment_id}")
-def get_consultation_messages(
-    appointment_id: int,
-    current_user: models.User = Depends(auth.get_current_user),
-    db: Session = Depends(get_db)
-):
-    appointment = db.query(models.Appointment).filter(
-        models.Appointment.id == appointment_id
-    ).first()
-    
-    if not appointment:
-        raise HTTPException(status_code=404, detail="Appointment not found")
-    
-    if current_user.id != appointment.user_id and current_user.id != appointment.psychologist.user_id:
-        raise HTTPException(status_code=403, detail="Not authorized")
-    
-    messages = db.query(models.ConsultationMessage).filter(
-        models.ConsultationMessage.appointment_id == appointment_id
-    ).order_by(models.ConsultationMessage.timestamp).all()
-    
-    result = []
-    for msg in messages:
-        sender = db.query(models.User).filter(models.User.id == msg.sender_id).first()
-        result.append({
-            "id": msg.id,
-            "sender_id": msg.sender_id,
-            "receiver_id": msg.receiver_id,
-            "message": msg.message,
-            "is_read": msg.is_read,
-            "timestamp": msg.timestamp,
-            "sender_name": sender.full_name or sender.username if sender else "Unknown"
-        })
-    
-    for msg in messages:
-        if msg.receiver_id == current_user.id and not msg.is_read:
-            msg.is_read = True
-    db.commit()
-    
-    return result
-
-@app.get("/api/consultation/my-consultations")
-def get_my_consultations(
-    current_user: models.User = Depends(auth.get_current_user),
-    db: Session = Depends(get_db)
-):
-    if current_user.role == "psychologist":
-        psychologist = db.query(models.Psychologist).filter(
-            models.Psychologist.user_id == current_user.id
-        ).first()
-        if psychologist:
-            appointments = db.query(models.Appointment).filter(
-                models.Appointment.psychologist_id == psychologist.id
-            ).all()
-        else:
-            appointments = []
-    else:
-        appointments = db.query(models.Appointment).filter(
-            models.Appointment.user_id == current_user.id
-        ).all()
-    
-    result = []
-    for apt in appointments:
-        psychologist_user = db.query(models.User).filter(
-            models.User.id == apt.psychologist.user_id
-        ).first() if apt.psychologist else None
-        
-        patient_user = db.query(models.User).filter(
-            models.User.id == apt.user_id
-        ).first()
-        
-        unread_count = db.query(models.ConsultationMessage).filter(
-            models.ConsultationMessage.appointment_id == apt.id,
-            models.ConsultationMessage.receiver_id == current_user.id,
-            models.ConsultationMessage.is_read == False
-        ).count()
-        
-        result.append({
-            "id": apt.id,
-            "psychologist_name": psychologist_user.full_name if psychologist_user else "Professional",
-            "patient_name": patient_user.full_name if patient_user else "Patient",
-            "scheduled_time": apt.scheduled_time,
-            "status": apt.status,
-            "duration": apt.duration,
-            "is_psychologist_view": current_user.role == "psychologist",
-            "unread_count": unread_count
-        })
-    
-    return result
 
 # ============ Community Routes ============
 
